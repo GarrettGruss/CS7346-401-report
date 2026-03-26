@@ -1,0 +1,62 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{helvet}
+% \renewcommand{\familydefault}{\sfdefault}
+\usepackage{setspace}
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{xurl}
+\usepackage[style=ieee]{biblatex}
+\addbibresource{references.bib}
+
+\onehalfspacing
+
+\title{}
+\author{Garrett Gruss and Blaine Harris}
+\date{\today}
+
+\begin{document}
+
+% ── Abstract (does not count toward page limit) ───────────────────────────────
+\newpage
+\begin{abstract}
+  \noindent
+  % TODO: 1–2 paragraph abstract summarizing the problem, approach, and key
+  % architectural decisions.
+\end{abstract}
+
+% ── Table of contents (does not count toward page limit) ─────────────────────
+\newpage
+\tableofcontents
+
+% ── Lists of figures and tables (do not count toward page limit) ──────────────
+\newpage
+\listoffigures
+\listoftables
+
+% ─────────────────────────────────────────────────────────────────────────────
+%  BODY — pages below count toward the 15–20 page limit
+% ─────────────────────────────────────────────────────────────────────────────
+\newpage
+
+\input{sections/01_introduction}
+\input{sections/02_assumptions}
+\input{sections/03_use_cases}
+\input{sections/04_architecture_diagram}
+\input{sections/05_quality_attributes}
+\input{sections/06_twelve_factor}
+\input{sections/07_well_architected}
+\input{sections/08_cloud_services}
+\input{sections/09_scalability_availability}
+\input{sections/10_cost}
+\input{sections/11_risks}
+\input{sections/12_conclusion}
+
+% ─────────────────────────────────────────────────────────────────────────────
+%  References (do not count toward page limit)
+% ─────────────────────────────────────────────────────────────────────────────
+\newpage
+\printbibliography[title={References}]
+
+\end{document}
