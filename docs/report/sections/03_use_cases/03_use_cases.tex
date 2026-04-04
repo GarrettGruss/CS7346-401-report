@@ -16,304 +16,72 @@ The system involves three distinct categories of actors whose interactions shape
 
 \begin{figure}[H]
   \centering
-  \resizebox{\linewidth}{!}{
-    \begin{sequencediagram}
-      \newthread{consumer}{Consumer}
-      \newthread{frontend}{Frontend}
-      \newthread{backend}{Backend}
-      \newthread{db}{Database}
-      \newthread{broker}{Message Broker}
-      \newthread{controller}{Device Controller}
-
-      \begin{call}{consumer}{Open dashboard}{frontend}{Dashboard rendered}
-        \begin{call}{frontend}{GET /household/devices}{backend}{Device states}
-          \begin{call}{backend}{Query device states}{db}{State records}
-          \end{call}
-        \end{call}
-      \end{call}
-
-      \begin{call}{consumer}{Issue command (e.g.\ lock door)}{frontend}{Dashboard updated}
-        \begin{call}{frontend}{POST /devices/\{id\}/command}{backend}{Command confirmed}
-          \begin{call}{backend}{Validate authorization}{db}{Auth confirmed}
-          \end{call}
-          \begin{call}{backend}{Publish command to device topic}{broker}{}
-            \begin{call}{broker}{Deliver command (MQTT)}{controller}{Acknowledge}
-            \end{call}
-          \end{call}
-          \begin{call}{backend}{Persist updated device state}{db}{}
-          \end{call}
-        \end{call}
-      \end{call}
-    \end{sequencediagram}
-  }
-  \caption{UC-01: Remote Device Control Sequence}
-  \label{fig:uc01-seq}
+  \includegraphics[width=\linewidth]{sections/03_use_cases/use_cases-1.png}
+  \caption{UC-01: Remote Device Control}
+  \label{fig:uc-01}
 \end{figure}
 
 \textbf{UC-02: Remote Camera Monitoring.} A Consumer wishes to observe their home remotely via a camera module. The Consumer navigates to the camera view in the frontend application and requests either a live stream or a recording from a specified time window. The backend retrieves the appropriate stream endpoint or historical media segment from the Video Stream service and Object Storage, respectively, and returns a playback-ready resource to the frontend. The Consumer can view continuous footage or seek through archived recordings. This use case drives the media ingestion, storage, and retrieval requirements of the architecture and informs the bandwidth and data retention policies applied to Object Storage.
 
 \begin{figure}[H]
   \centering
-  \resizebox{\linewidth}{!}{
-    \begin{sequencediagram}
-      \newthread{consumer}{Consumer}
-      \newthread{frontend}{Frontend}
-      \newthread{backend}{Backend}
-      \newthread{video}{Video Stream}
-      \newthread{storage}{Object Storage}
-
-      \mess{consumer}{Navigate to camera view}{frontend}
-
-      \begin{sdblock}{Alt}{[Live Stream]}
-        \begin{call}{frontend}{GET /devices/\{id\}/stream/live}{backend}{Stream URL}
-          \begin{call}{backend}{Request live stream endpoint}{video}{Stream URL}
-          \end{call}
-        \end{call}
-        \mess{frontend}{Live video playback begins}{consumer}
-      \end{sdblock}
-
-      \begin{sdblock}{Alt}{[Recorded Footage]}
-        \mess{consumer}{Select time window}{frontend}
-        \begin{call}{frontend}{GET /devices/\{id\}/stream?from=T1\&to=T2}{backend}{Playback manifest}
-          \begin{call}{backend}{Retrieve media segments for window}{storage}{Media references}
-          \end{call}
-        \end{call}
-        \mess{frontend}{Recorded footage playback begins}{consumer}
-      \end{sdblock}
-    \end{sequencediagram}
-  }
-  \caption{UC-02: Remote Camera Monitoring Sequence}
-  \label{fig:uc02-seq}
+  \includegraphics[width=\linewidth]{sections/03_use_cases/use_cases-2.png}
+  \caption{UC-02: Remote Camera Monitoring}
+  \label{fig:uc-02}
 \end{figure}
 
+% This use case might be out of scope for the project
 \textbf{UC-03: Automation Rule Programming.} A Consumer wishes to define a rule that automates device behavior without manual intervention --- for example, locking all doors at 10:00 PM nightly, or turning on hallway lights when a motion sensor detects activity after sunset. The Consumer accesses the automation rules interface in the frontend, defines trigger conditions and target actions, and saves the rule. The backend persists the rule definition to the Relational Database and registers it with the rule evaluation engine. At runtime, the backend evaluates active rules against incoming device telemetry and scheduled triggers, and dispatches commands to the appropriate Device Controllers when conditions are met. This use case requires the platform to support a flexible, user-defined logic model and reliable scheduled execution independent of whether the Consumer is actively using the application.
 
 \begin{figure}[H]
   \centering
-  \resizebox{\linewidth}{!}{
-    \begin{sequencediagram}
-      \newthread{consumer}{Consumer}
-      \newthread{frontend}{Frontend}
-      \newthread{backend}{Backend}
-      \newthread{db}{Database}
-      \newthread{broker}{Message Broker}
-      \newthread{controller}{Device Controller}
-
-      \begin{call}{consumer}{Define automation rule (trigger + action)}{frontend}{Rule confirmed}
-        \begin{call}{frontend}{POST /rules}{backend}{Rule created}
-          \begin{call}{backend}{Persist rule definition}{db}{Rule saved}
-          \end{call}
-        \end{call}
-      \end{call}
-
-      \begin{sdblock}{Alt}{[Scheduled trigger]}
-        \begin{callself}{backend}{Scheduler fires at defined time}{}\end{callself}
-      \end{sdblock}
-
-      \begin{sdblock}{Alt}{[Device event trigger]}
-        \mess{controller}{Publish telemetry event}{broker}
-        \mess{broker}{Event delivered}{backend}
-      \end{sdblock}
-
-      \begin{call}{backend}{Evaluate matching active rules}{db}{Matching rule actions}
-      \end{call}
-      \begin{call}{backend}{Publish command(s) to target device topic(s)}{broker}{}
-        \begin{call}{broker}{Deliver command (MQTT)}{controller}{Acknowledge}
-        \end{call}
-      \end{call}
-      \begin{call}{backend}{Log rule execution event}{db}{}
-      \end{call}
-    \end{sequencediagram}
-  }
-  \caption{UC-03: Automation Rule Programming Sequence}
-  \label{fig:uc03-seq}
+  \includegraphics[width=\linewidth]{sections/03_use_cases/use_cases-3.png}
+  \caption{UC-03: Automation Rule Programming}
+  \label{fig:uc-03}
 \end{figure}
 
 \textbf{UC-04: Device Registration and Household Setup.} A Consumer purchases a new module and needs to associate it with their household account so that it appears in the dashboard and can be controlled or incorporated into automation rules. The Consumer powers on the module, which connects to the household WiFi and initiates a registration handshake with the platform via the Message Broker. The backend, through the Device Management service, assigns the module a unique identity, associates it with the Consumer's household, and applies the default policy configuration for that device type. The module is then available in the Consumer's dashboard. This use case also covers the initial household onboarding flow when a Consumer sets up the system for the first time, including account creation and WiFi credential provisioning.
 
 \begin{figure}[H]
   \centering
-  \resizebox{\linewidth}{!}{
-    \begin{sequencediagram}
-      \newthread{consumer}{Consumer}
-      \newthread{frontend}{Frontend}
-      \newthread{backend}{Backend}
-      \newthread{db}{Database}
-      \newthread{broker}{Message Broker}
-      \newthread{devmgmt}{Device Mgmt}
-      \newthread{controller}{Device Controller}
-
-      \begin{call}{consumer}{Create account}{frontend}{Account ready}
-        \begin{call}{frontend}{POST /accounts}{backend}{Account confirmed}
-          \begin{call}{backend}{Persist account and household record}{db}{Account created}
-          \end{call}
-        \end{call}
-      \end{call}
-
-      \mess{consumer}{Power on new module}{controller}
-      \begin{call}{controller}{Initiate registration handshake (MQTT)}{broker}{}
-        \begin{call}{broker}{Forward registration request}{devmgmt}{}
-          \begin{call}{devmgmt}{Assign device identity}{db}{Device ID assigned}
-          \end{call}
-          \begin{call}{devmgmt}{Associate device with household}{db}{Association persisted}
-          \end{call}
-          \begin{call}{devmgmt}{Publish device policy to device topic}{broker}{}
-            \begin{call}{broker}{Deliver policy configuration (MQTT)}{controller}{Policy acknowledged}
-            \end{call}
-          \end{call}
-        \end{call}
-      \end{call}
-
-      \mess{devmgmt}{Registration complete notification}{backend}
-      \mess{backend}{Device available in dashboard}{frontend}
-      \mess{frontend}{New module visible}{consumer}
-    \end{sequencediagram}
-  }
-  \caption{UC-04: Device Registration and Household Setup Sequence}
-  \label{fig:uc04-seq}
+  \includegraphics[width=\linewidth]{sections/03_use_cases/use_cases-4.png}
+  \caption{UC-04: Device Registration and Household Setup}
+  \label{fig:uc-04}
 \end{figure}
 
 \textbf{UC-05: Event Notification and Alerting.} A Consumer wishes to receive immediate notification when a significant event occurs at their home --- such as a door being opened unexpectedly, a motion detection trigger, or a sensor crossing a threshold. The Consumer configures notification preferences in the frontend, selecting which event types and which modules should trigger alerts and specifying delivery channels such as push notification, SMS, or email. When a Device Controller publishes a qualifying event to the Message Broker, the backend evaluates the event against the Consumer's notification configuration and dispatches an alert through the appropriate channel. This use case requires low-latency event propagation from the device layer through the platform to the Consumer, and informs the reliability requirements of the message pipeline.
 
 \begin{figure}[H]
   \centering
-  \resizebox{\linewidth}{!}{
-    \begin{sequencediagram}
-      \newthread{consumer}{Consumer}
-      \newthread{frontend}{Frontend}
-      \newthread{backend}{Backend}
-      \newthread{db}{Database}
-      \newthread{broker}{Message Broker}
-      \newthread{controller}{Device Controller}
-      \newthread{alerting}{Alerting Service}
-
-      \begin{call}{consumer}{Configure alert preferences}{frontend}{Preferences updated}
-        \begin{call}{frontend}{PUT /notifications/preferences}{backend}{Confirmation}
-          \begin{call}{backend}{Persist notification rules and channels}{db}{Preferences saved}
-          \end{call}
-        \end{call}
-      \end{call}
-
-      \mess{controller}{Publish event (e.g.\ motion detected)}{broker}
-      \mess{broker}{Deliver event}{backend}
-      \begin{call}{backend}{Retrieve notification preferences}{db}{Matching alert rules}
-      \end{call}
-      \begin{call}{backend}{Persist event to activity log}{db}{}
-      \end{call}
-      \mess{backend}{Dispatch alert with channel targets}{alerting}
-      \mess{alerting}{Notification delivered (push / SMS / email)}{consumer}
-    \end{sequencediagram}
-  }
-  \caption{UC-05: Event Notification and Alerting Sequence}
-  \label{fig:uc05-seq}
+  \includegraphics[width=\linewidth]{sections/03_use_cases/use_cases-5.png}
+  \caption{UC-05: Event Notification and Alerting}
+  \label{fig:uc-05}
 \end{figure}
 
+% This use case might be out of scope for the project
 \textbf{UC-06: Access Delegation.} A Consumer wishes to grant another member of their household --- such as a spouse or older child --- the ability to control specific modules or view certain camera feeds without granting full administrative access to the account. The Consumer navigates to the access management section of the frontend and invites the secondary user by email or phone number, assigning a permission profile that scopes their access to designated modules and operations. The secondary user receives an invitation, creates or links an account, and thereafter interacts with the system within the boundaries set by the primary Consumer. This use case requires the backend authorization model to support per-module, per-user permission grants that can be modified or revoked by the primary account holder at any time.
 
 \begin{figure}[H]
   \centering
-  \resizebox{\linewidth}{!}{
-    \begin{sequencediagram}
-      \newthread{primary}{Consumer (Primary)}
-      \newthread{secondary}{Secondary User}
-      \newthread{frontend}{Frontend}
-      \newthread{backend}{Backend}
-      \newthread{db}{Database}
-      \newthread{alerting}{Alerting Service}
-
-      \begin{call}{primary}{Invite secondary user with permission scope}{frontend}{}
-        \begin{call}{frontend}{POST /household/members}{backend}{}
-          \begin{call}{backend}{Create pending invite with permission profile}{db}{Invite saved}
-          \end{call}
-          \mess{backend}{Dispatch invitation notification}{alerting}
-        \end{call}
-      \end{call}
-      \mess{alerting}{Invitation delivered (email / SMS)}{secondary}
-
-      \begin{call}{secondary}{Accept invitation and create account}{frontend}{Access granted}
-        \begin{call}{frontend}{POST /accounts + PUT /invites/\{token\}/accept}{backend}{Membership confirmed}
-          \begin{call}{backend}{Activate account, link to household with scoped permissions}{db}{Confirmed}
-          \end{call}
-        \end{call}
-      \end{call}
-
-      \begin{call}{primary}{Revoke secondary user access}{frontend}{Member removed}
-        \begin{call}{frontend}{DELETE /household/members/\{userId\}}{backend}{Confirmed}
-          \begin{call}{backend}{Remove permission record}{db}{Revocation persisted}
-          \end{call}
-        \end{call}
-      \end{call}
-    \end{sequencediagram}
-  }
-  \caption{UC-06: Access Delegation Sequence}
-  \label{fig:uc06-seq}
+  \includegraphics[width=\linewidth]{sections/03_use_cases/use_cases-6.png}
+  \caption{UC-06: Access Delegation}
+  \label{fig:uc-06}
 \end{figure}
 
 \textbf{UC-07: Historical Event and Activity Review.} A Consumer wishes to review past activity for their household --- for example, checking what time a door was unlocked on a given day, or reviewing a motion event that triggered an alert overnight. The Consumer accesses the event log in the frontend and queries by device, event type, or date range. The backend retrieves the relevant records from the Relational Database and, where applicable, surfaces associated media clips from Object Storage. This use case drives the data retention and indexing requirements of the storage layer, as Consumers expect to query event history spanning days to months with acceptable response times.
 
 \begin{figure}[H]
   \centering
-  \resizebox{\linewidth}{!}{
-    \begin{sequencediagram}
-      \newthread{consumer}{Consumer}
-      \newthread{frontend}{Frontend}
-      \newthread{backend}{Backend}
-      \newthread{db}{Database}
-      \newthread{storage}{Object Storage}
-
-      \begin{call}{consumer}{Open event log, set filters}{frontend}{Event log rendered}
-        \begin{call}{frontend}{GET /events?deviceId=X\&from=T1\&to=T2}{backend}{Event list with media refs}
-          \begin{call}{backend}{Query event records matching filters}{db}{Paginated event records}
-          \end{call}
-          \begin{sdblock}{Loop}{[for each event with associated media]}
-            \begin{call}{backend}{Retrieve media reference URL}{storage}{Signed URL}
-            \end{call}
-          \end{sdblock}
-        \end{call}
-      \end{call}
-
-      \mess{consumer}{Select event to view media}{frontend}
-      \mess{frontend}{Media clip played from signed URL}{consumer}
-    \end{sequencediagram}
-  }
-  \caption{UC-07: Historical Event and Activity Review Sequence}
-  \label{fig:uc07-seq}
+  \includegraphics[width=\linewidth]{sections/03_use_cases/use_cases-7.png}
+  \caption{UC-07: Historical Event and Activity Review}
+  \label{fig:uc-07}
 \end{figure}
 
 \textbf{UC-08: Platform Operations and Fleet Monitoring.} A Platform Operator monitors the health of the cloud infrastructure and the device fleet across all deployed households. The operator accesses internal dashboards provided by the Visualization Dashboard and Business Metrics components to observe service error rates, message throughput, device connectivity statistics, and key business indicators such as active household counts and module type distribution. When a threshold breach occurs --- such as an elevated rate of failed device connections --- the Alerting Service notifies the on-call operator, who investigates and remediates. This use case also covers the deployment of software updates to the platform services and the issuance of firmware update jobs to Device Controllers through the Device Management service.
 
 \begin{figure}[H]
   \centering
-  \resizebox{\linewidth}{!}{
-    \begin{sequencediagram}
-      \newthread{operator}{Platform Operator}
-      \newthread{dashboard}{Dashboard}
-      \newthread{metrics}{Metrics Collector}
-      \newthread{alerting}{Alerting Service}
-      \newthread{backend}{Backend}
-      \newthread{devmgmt}{Device Mgmt}
-      \newthread{broker}{Message Broker}
-      \newthread{controller}{Device Controller}
-
-      \mess{backend}{Emit service metrics (error rate, latency)}{metrics}
-      \mess{broker}{Emit connectivity metrics}{metrics}
-      \begin{callself}{metrics}{Evaluate alarm thresholds}{}\end{callself}
-      \mess{metrics}{Threshold breach detected}{alerting}
-      \mess{alerting}{Alert notification dispatched}{operator}
-
-      \begin{call}{operator}{Open operational dashboard}{dashboard}{Graphs and panels rendered}
-        \begin{call}{dashboard}{Query time-series data}{metrics}{Metrics returned}
-        \end{call}
-      \end{call}
-
-      \begin{call}{operator}{Create firmware update job for device group}{devmgmt}{Job progress reported}
-        \begin{call}{devmgmt}{Publish update job to fleet topic}{broker}{}
-          \begin{call}{broker}{Deliver update directive (MQTT)}{controller}{Download and apply acknowledged}
-          \end{call}
-        \end{call}
-      \end{call}
-    \end{sequencediagram}
-  }
-  \caption{UC-08: Platform Operations and Fleet Monitoring Sequence}
-  \label{fig:uc08-seq}
+  \includegraphics[width=\linewidth]{sections/03_use_cases/use_cases-8.png}
+  \caption{UC-08: Platform Operations and Fleet Monitoring}
+  \label{fig:uc-08}
 \end{figure}
