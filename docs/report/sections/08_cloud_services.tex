@@ -1,5 +1,106 @@
 % ── 8. Cloud Services Selection and Justification ────────────────────────────
-\section{Cloud Services Selection and Justification}
 
 % TODO: List major cloud services; explain why each was chosen over
 % alternatives; discuss advantages, limitations, managed vs. self-managed.
+\section{Cloud Services Utilized}
+
+\subsection{Edge Delivery and Public API Access}
+\subsubsection{Amazon CloudFront}
+\begin{itemize}
+    \item Delivers the consumer-facing web application through a globally distributed content delivery network.
+    \item Serves as the primary edge entry point for user-facing traffic.
+\end{itemize}
+
+\subsubsection{AWS WAF}
+\begin{itemize}
+    \item Protects the public web and API surfaces from common web attacks and abusive traffic patterns.
+    \item Works with CloudFront and API Gateway to improve the security posture of remote access.
+\end{itemize}
+
+\subsubsection{Amazon API Gateway}
+\begin{itemize}
+    \item Exposes the platform's public API for device control, monitoring, onboarding, and automation management.
+    \item Serves as the primary application entry point for authenticated client requests.
+\end{itemize}
+
+\subsection{Identity and Access Management}
+\subsubsection{Amazon Cognito}
+\begin{itemize}
+    \item Provides user authentication for the consumer-facing application.
+    \item Supports secure remote access and can enforce multi-factor authentication for higher assurance.
+\end{itemize}
+
+\subsection{Application and Automation Services}
+\subsubsection{AWS Lambda}
+\begin{itemize}
+    \item Implements backend business logic for device control, state retrieval, onboarding, and rule management.
+    \item Connects the user-facing API path to the IoT, storage, and workflow services.
+\end{itemize}
+
+\subsubsection{AWS Step Functions}
+\begin{itemize}
+    \item Coordinates multi-step automation workflows and event-driven orchestration.
+    \item Supports more complex automations than would be appropriate to model in a single function invocation.
+\end{itemize}
+
+\subsubsection{Amazon SNS}
+\begin{itemize}
+    \item Delivers notifications and alerts to end users.
+    \item Supports automation outcomes such as security events, device warnings, and rule-triggered notifications.
+\end{itemize}
+
+\subsection{IoT Device Connectivity and Management}
+\subsubsection{AWS IoT Core}
+\begin{itemize}
+    \item Acts as the primary cloud entry point for smart-home devices.
+    \item Supports secure device connectivity, device messaging, and event ingestion for modular home units.
+\end{itemize}
+
+\subsubsection{AWS IoT Device Management}
+\begin{itemize}
+    \item Supports device onboarding, registration, fleet organization, and remote operational management.
+    \item Provides a high-level architectural answer for provisioning and over-the-air device updates.
+\end{itemize}
+
+\subsection{Camera and Video Services}
+\subsubsection{Amazon Kinesis Video Streams}
+\begin{itemize}
+    \item Supports ingestion and delivery of camera video streams.
+    \item Separates high-bandwidth video traffic from the general IoT control and telemetry path.
+\end{itemize}
+
+\subsection{Data Storage Services}
+\subsubsection{Amazon DynamoDB}
+\begin{itemize}
+    \item Stores operational platform data such as users, households, device metadata, and automation rules.
+    \item Serves as the primary low-latency data store for application state and configuration data.
+\end{itemize}
+
+\subsubsection{Amazon Timestream}
+\begin{itemize}
+    \item Stores time-series telemetry such as environmental readings, device health data, and sensor history.
+    \item Supports historical analysis and trend visualization for smart-home activity.
+\end{itemize}
+
+\subsubsection{Amazon S3}
+\begin{itemize}
+    \item Stores large objects and retained artifacts such as camera snapshots, archived media, and long-term data exports.
+    \item Provides durable low-cost storage for data that is not appropriate for transactional or time-series databases.
+\end{itemize}
+
+\subsection{Monitoring and Observability}
+\subsubsection{Amazon CloudWatch}
+\begin{itemize}
+    \item Provides centralized monitoring, logging, metrics, and alerting across the platform.
+    \item Supports operational visibility for APIs, application services, workflows, and IoT-related components.
+\end{itemize}
+
+\subsection{Summary of Architectural Role}
+\begin{itemize}
+    \item CloudFront, WAF, API Gateway, and Cognito support secure remote user access.
+    \item Lambda and Step Functions implement application behavior and automation orchestration.
+    \item AWS IoT Core and AWS IoT Device Management support secure device connectivity and lifecycle management.
+    \item Kinesis Video Streams supports camera-specific media delivery.
+    \item DynamoDB, Timestream, and S3 provide purpose-specific storage for operational data, telemetry, and media.
+    \item CloudWatch and SNS support observability and user-facing alerting.
+\end{itemize}
