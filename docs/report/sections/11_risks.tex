@@ -1,5 +1,48 @@
 % ── 11. Risks and Mitigation Strategies ──────────────────────────────────────
 \section{Risks and Mitigation Strategies}
 
-% TODO: Identify key technical and operational risks.
-% For each: describe the mitigation strategy and residual risk.
+Every architecture involves residual risk — conditions under which the design fails to meet its objectives despite best efforts. Identifying these risks explicitly allows the engineering team to prioritize mitigations and to make informed decisions about which risks are acceptable given the cost and complexity of addressing them. The risks below are organized by domain and characterized by their likelihood and potential impact on the platform.
+
+\subsection{Device Compromise and Lateral Movement}
+
+A smart-home device that is physically accessible to a malicious actor — for example, a lock or camera installed on an exterior wall — may be susceptible to firmware extraction, certificate theft, or command injection if its hardware security posture is weak. A compromised device could be used to publish false telemetry, issue commands to other devices in the same household, or probe the IoT namespace for information about neighboring households.
+
+The primary mitigation is the use of IoT Core policies that restrict each device's publish and subscribe permissions to topic paths scoped to its own device identifier and household namespace. A certificate revocation procedure, integrated with IoT Device Management, allows the operations team to immediately disable a compromised device's cloud access. Hardware-level mitigations — secure storage of device certificates in a trusted platform module and firmware signature verification — are within the scope of the firmware team's responsibilities but should be specified as requirements in the cross-team interface.
+
+Residual risk remains because the firmware team controls the device-side security posture, which is outside this architecture's direct influence. The platform should treat any device as potentially untrusted at the protocol level and validate all published data before acting on it.
+
+\subsection{Vendor Lock-In}
+
+The architecture is deeply dependent on AWS-specific services and APIs. AWS IoT Core's MQTT dialect, DynamoDB's data model, Timestream's query interface, and KVS's ingest SDK are all proprietary. Migrating the platform to a different cloud provider would require substantial re-engineering of every layer of the system.
+
+The mitigation is not to eliminate lock-in — doing so would require significantly more abstraction layers and would compromise the simplicity and cost-efficiency that managed services provide — but to acknowledge and document it as a deliberate architectural decision. The team should maintain an understanding of which components would be the most expensive to migrate and ensure that the business case for the AWS dependency is revisited periodically. Lambda functions that contain business logic should be designed to minimize AWS SDK calls within core domain logic so that they remain portable in principle even if the infrastructure layer changes.
+
+\subsection{Camera Storage Cost Overrun}
+
+As analyzed in Section~\ref{sec:cost}, KVS storage costs are the dominant cost driver for camera-equipped households and scale non-linearly with camera count and retention period. If camera adoption exceeds the 45\% rate assumed in the cost model, or if the default retention policy is set to 30 or 90 days, fleet-wide storage costs could significantly exceed projections.
+
+The mitigation is to implement default retention policies conservatively (14 days by default), to expose retention configuration to consumers with clear cost implications, and to instrument per-household storage consumption so that the operations team can identify and investigate households with anomalously high storage usage. The S3 archival tier for older recordings should be made available to consumers who want longer retention at lower cost. A quota or soft limit per household on KVS storage would provide a backstop against runaway cost.
+
+\subsection{Lambda Cold Start Latency}
+
+Lambda functions that have not been invoked recently incur a cold-start delay when a new execution environment is initialized. For the device command path, a cold start could add 500ms to 1500ms to the round-trip latency, potentially making the interaction feel unresponsive to a consumer expecting near-real-time feedback.
+
+The mitigation is to apply Lambda provisioned concurrency to the command processing functions most sensitive to latency, maintaining a pool of pre-initialized execution environments ready to handle requests without initialization delay. The tradeoff is a higher per-hour compute cost for the duration the provisioned concurrency is maintained. An alternative partial mitigation is to schedule a low-frequency synthetic keep-warm invocation to prevent execution environments from being reclaimed during predictable low-traffic periods, at a much lower cost than full provisioned concurrency.
+
+\subsection{IoT Message Volume and Cost Surge}
+
+A firmware defect or misconfigured device could cause a device to publish telemetry at a rate far exceeding the intended design parameters — for example, sending thousands of messages per second rather than one per minute. At IoT Core's per-message pricing, a single malfunctioning device could generate a significant unexpected cost in a short period.
+
+The mitigation is to configure IoT Core throttling policies that limit the per-device publish rate and to implement anomaly detection in the telemetry processing pipeline that alerts the operations team when a device's message rate exceeds a defined threshold. AWS IoT Device Defender can monitor fleet-wide metrics and flag deviations from baseline behavior. Devices confirmed to be malfunctioning can be remotely disconnected or have their IoT policy updated to block further publishing until a firmware fix is deployed.
+
+\subsection{Regulatory and Compliance Changes}
+
+Consumer privacy regulations governing smart-home devices are evolving, with potential implications for how the platform stores, processes, and shares data captured by cameras, motion sensors, and other household monitoring devices. A regulatory change that requires data residency in a specific geographic region, or that mandates specific data retention limits or consumer consent flows, could require significant platform changes if not anticipated.
+
+The mitigation is to design the data layer with data residency in mind from the outset — all platform data is stored in a single named AWS region, and the system does not replicate consumer data to other regions without explicit configuration — and to maintain clear data maps that identify where each category of consumer data is stored and for how long. Cognito's built-in consent management features should be configured to capture explicit consumer consent for data collection at onboarding. The legal team should be engaged periodically to review the platform's data handling practices against current and anticipated regulatory requirements.
+
+\subsection{Single-Region Availability Event}
+
+The platform is deployed in a single AWS region. Although AWS regions are designed for extremely high availability, a catastrophic regional event — such as an extended multi-AZ failure or a regional DNS incident — would make the platform unavailable to all households simultaneously.
+
+The residual risk of a single-region outage is accepted as a design tradeoff at this stage of the platform's maturity. The mitigation strategy for the future is a multi-region active-passive deployment using DynamoDB Global Tables, S3 cross-region replication, and Route 53 health-check-based failover. This investment is deferred until the platform reaches a scale where the business impact of a regional outage justifies the additional cost and operational complexity of a multi-region architecture.

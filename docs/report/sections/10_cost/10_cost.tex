@@ -16,21 +16,21 @@ Tables~\ref{tab:sim-inputs} and~\ref{tab:pricing-constants} enumerate the simula
   \small
   \caption{Monte Carlo Simulation Input Variables}
   \label{tab:sim-inputs}
-  \begin{tabular}{llll}
+  \begin{tabular}{lll}
     \hline
-    \textbf{Variable} & \textbf{Distribution} & \textbf{Parameters} & \textbf{Derived quantity} \\
+    \textbf{Variable} & \textbf{Distribution} & \textbf{Parameters} \\
     \hline
-    Usage intensity         & Normal (clipped)     & $\mu=0.50,\;\sigma=0.20,\;[0.05,\,1.0]$ & Scales all per-user rates \\
-    Non-camera devices      & Discrete uniform     & $[1,\,12]$                               & IoT messages, IoT DM cost \\
-    Camera adoption         & Bernoulli            & $p=0.45$                                 & KVS and S3 archival cost \\
-    Number of cameras       & Discrete uniform     & $[1,\,4]$ (camera users only)            & KVS ingest and storage \\
-    Video retention         & Weighted categorical & 7\,d (25\%), 14\,d (40\%), 30\,d (25\%), 90\,d (10\%) & KVS storage window \\
-    Daily API calls         & Linear in usage      & $[15,\,250]$ calls/day                   & API GW, Lambda, DynamoDB \\
-    IoT messages/device/day & Linear in usage      & $[50,\,600]$ messages/day                & IoT Core, Timestream \\
-    Camera recording hrs/day & Linear in usage     & $[2,\,24]$ hours/day                     & KVS ingest volume \\
-    Camera viewing hrs/day  & Linear in usage      & $[0.1,\,2.0]$ hours/day                  & KVS consume volume \\
-    Automation rules        & Linear in usage      & $[0,\,15]$ rules                         & Step Functions, Lambda \\
-    Notification opt-in     & Bernoulli            & $p=0.70$                                 & SNS push volume \\
+    Usage intensity         & Normal (clipped)     & $\mu=0.50,\;\sigma=0.20,\;[0.05,\,1.0]$ \\
+    Non-camera devices      & Discrete uniform     & $[1,\,12]$                                 \\
+    Camera adoption         & Bernoulli            & $p=0.45$                                   \\
+    Number of cameras       & Discrete uniform     & $[1,\,4]$ (camera users only)              \\
+    Video retention         & Weighted categorical & 7\,d (25\%), 14\,d (40\%), 30\,d (25\%), 90\,d (10\%) \\
+    Daily API calls         & Linear in usage      & $[15,\,250]$ calls/day                     \\
+    IoT messages/device/day & Linear in usage      & $[50,\,600]$ messages/day                  \\
+    Camera recording hrs/day & Linear in usage     & $[2,\,24]$ hours/day                      \\
+    Camera viewing hrs/day  & Linear in usage      & $[0.1,\,2.0]$ hours/day                  \\
+    Automation rules        & Linear in usage      & $[0,\,15]$ rules                         \\
+    Notification opt-in     & Bernoulli            & $p=0.70$                                  \\
     \hline
   \end{tabular}
 \end{table}

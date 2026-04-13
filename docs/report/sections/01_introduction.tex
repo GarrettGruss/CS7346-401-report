@@ -1,6 +1,20 @@
 % ── 1. Introduction and Solution Overview ─────────────────────────────────────
 \section{Introduction and Solution Overview}
 
-% TODO: Describe the kata and its problem domain; summarize functional and
-% non-functional requirements; give a high-level overview of the proposed
-% cloud-based solution.
+A major home electronics manufacturer is bringing a cloud-connected smart-home platform to market. The company sells modular hardware units — including lights, locks, thermostats, motion sensors, and security cameras — to individual consumer households. Each unit is intended to be installed by the end user without technical expertise, connected to the household's existing WiFi network, and controlled remotely through a web or mobile application. The platform must support thousands of household deployments within the first three years of operation and accommodate a growing catalog of device types without requiring fundamental architectural revision each time a new module category is introduced.
+
+The challenge this platform presents is not simply building a web application with a backend; it is building a system that simultaneously manages two distinct traffic patterns with very different characteristics. The first is user-generated API traffic: relatively low-volume, latency-sensitive requests from authenticated consumers who want to view device state, issue commands, configure automation rules, or review event history. The second is device-generated telemetry traffic: high-volume, continuous streams of state updates and sensor readings produced autonomously by every registered module regardless of whether the user is actively engaged. These two patterns must be handled by the same platform, with data flowing correctly between the device layer and the user-facing application layer, and with guarantees of reliability and responsiveness that meet consumer expectations for a product in this category.
+
+This report presents the cloud architecture proposed by team LightsPlease in response to the Architectural Katas problem statement. The proposed solution is built entirely on Amazon Web Services and follows a managed-services-first philosophy: wherever AWS offers a purpose-built managed service that addresses a platform requirement, that service is preferred over a self-operated equivalent, on the grounds that managed services reduce operational burden and carry stronger availability and durability guarantees than a small engineering team could reasonably achieve independently. The architecture separates the platform into three functional paths — a web and API ingress path for consumer-facing requests, a device connectivity and telemetry path for smart-home modules, and a dedicated media path for security camera streams — and connects these paths through a serverless application layer that handles business logic, automation, and data routing.
+
+\subsection{Functional Requirements}
+
+The platform must enable a consumer to control any registered module remotely over the internet with near-real-time feedback on command execution. It must provide live and recorded camera access, support user-defined automation rules that execute on schedules or in response to device events, deliver push or email notifications for configurable alert conditions, and maintain a queryable event history spanning days to months. Device onboarding must be self-service and require no technical expertise on the part of the consumer. The platform must also support over-the-air firmware updates to deployed devices and provide internal operational dashboards for the engineering and operations team.
+
+\subsection{Non-Functional Requirements}
+
+The architecture must scale horizontally from a small initial user base to thousands of simultaneously active households without requiring re-architecture. Command round-trip latency from the user interface to device acknowledgment must be low enough that the interaction feels responsive to a non-technical consumer. The system must remain available and continue accepting device telemetry and consumer requests even in the event of partial infrastructure failures. Security requirements include encrypted transport for all device and user traffic, authenticated access for all consumer-facing endpoints, and per-device identity management that prevents one household's modules from being addressed by another household's account. Cost must remain predictable and proportional to actual usage, with no large fixed infrastructure commitments during the early growth phase.
+
+\subsection{Solution Overview}
+
+% TODO: 1–2 paragraph narrative summary referencing the architecture diagram once it is exported.

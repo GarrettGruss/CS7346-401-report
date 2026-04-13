@@ -1,6 +1,30 @@
 % ── 9. Scalability, Availability, and Fault Tolerance ────────────────────────
 \section{Scalability, Availability, and Fault Tolerance}
 
-% TODO: Explain how the architecture scales with demand, handles failures,
-% and protects data availability/durability.
-% Include redundancy strategies, stateless components, backup/recovery.
+A consumer IoT platform must sustain acceptable performance as the device fleet and user base grow, remain operational in the face of component failures, and protect the data its users depend on. This section examines how the LightsPlease architecture addresses each of these concerns across its three functional paths: the web and API ingress path, the device connectivity and telemetry path, and the camera media path.
+
+\subsection{Horizontal Scalability}
+
+The architecture achieves horizontal scalability by composing exclusively of services that scale automatically without operator intervention. Lambda scales by instantiating additional execution environments in parallel up to the regional concurrency limit; there are no application servers to resize or rebalance. API Gateway, IoT Core, SNS, and Step Functions are all managed services that scale their underlying capacity transparently to the platform operator. DynamoDB in on-demand mode scales read and write throughput to match actual traffic without requiring capacity reservation.
+
+The device connectivity path scales differently from the API path. IoT Core connection and message throughput scales with the device fleet, not with the active user count, and the two scaling axes are independent. This decoupling is important: a period of high device telemetry activity (for example, a firmware event that causes all devices to publish state simultaneously) does not consume Lambda concurrency allocated to the API path and vice versa, provided concurrency reservations are configured appropriately. Reserved Lambda concurrency limits should be applied to isolate the API-triggered function pool from the IoT-triggered function pool.
+
+The camera media path scales with camera count rather than with overall user engagement. KVS ingest throughput scales with the number of active camera streams, and the platform operator does not need to provision KVS capacity. S3 storage scales without practical limit.
+
+\subsection{Availability and Redundancy}
+
+All AWS managed services used in this architecture are deployed across multiple availability zones within the chosen region by default. DynamoDB replicates data synchronously to multiple AZs and routes requests away from a degraded AZ transparently. Lambda is available across all AZs in the region and distributes function invocations automatically. IoT Core's device endpoint is a regional service with multi-AZ redundancy built in. API Gateway and CloudFront are regional and edge services, respectively, with no single-AZ dependency.
+
+The architecture does not currently include multi-region deployment. A single-region deployment is appropriate for the initial launch given the geographic scope assumption in Section~\ref{sec:assumptions}, and it simplifies data consistency and regulatory compliance. If the platform expands to multiple regions, DynamoDB Global Tables, S3 cross-region replication, and a Route 53 geolocation or latency routing policy would be the primary components of a multi-region extension.
+
+\subsection{Fault Isolation and Recovery}
+
+% TODO: Expand with circuit breaker patterns, DLQs for Lambda async invocations, Step Functions error handling, and IoT Core last-will messages.
+
+The three functional paths — API, IoT, and media — are isolated so that a failure in one path does not propagate into the others. Lambda dead-letter queues (DLQs) capture asynchronously invoked functions that exhaust their retry budget, preventing silent failure for IoT-triggered processing. Step Functions state machines apply configurable retry policies and catch blocks at each step, so a transient downstream failure in Lambda or DynamoDB results in an automatic retry rather than a dropped workflow. Devices that lose cloud connectivity continue to operate locally where firmware supports it; the cloud platform does not need to mediate every device operation.
+
+\subsection{Data Durability}
+
+DynamoDB provides 99.999\% availability and multi-AZ synchronous replication, with point-in-time recovery enabled to support restoration to any second within the retention window. S3 provides eleven nines of durability through redundant storage across multiple facilities. Timestream's magnetic store replicates data redundantly and is designed for 99.999\% availability. KVS retains video streams in a managed durable store with the platform-configured retention window.
+
+% TODO: Specify backup and recovery objectives (RPO/RTO) once defined by the business. Consider DynamoDB point-in-time recovery settings, S3 versioning for configuration objects, and cross-region backup strategy.

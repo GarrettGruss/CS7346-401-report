@@ -1,106 +1,46 @@
 % ── 8. Cloud Services Selection and Justification ────────────────────────────
+\section{Cloud Services Selection and Justification}
 
-% TODO: List major cloud services; explain why each was chosen over
-% alternatives; discuss advantages, limitations, managed vs. self-managed.
-\section{Cloud Services Utilized}
+A detailed description of the responsibilities each AWS service fulfills within this architecture is provided in Section~\ref{sec:architecture}. This section focuses on the selection rationale — why each service was chosen over plausible alternatives — and identifies the limitations and tradeoffs accepted by each choice.
 
 \subsection{Edge Delivery and Public API Access}
-\subsubsection{Amazon CloudFront}
-\begin{itemize}
-    \item Delivers the consumer-facing web application through a globally distributed content delivery network.
-    \item Serves as the primary edge entry point for user-facing traffic.
-\end{itemize}
 
-\subsubsection{AWS WAF}
-\begin{itemize}
-    \item Protects the public web and API surfaces from common web attacks and abusive traffic patterns.
-    \item Works with CloudFront and API Gateway to improve the security posture of remote access.
-\end{itemize}
+\textbf{Amazon CloudFront} was selected as the edge delivery layer because it provides a globally distributed cache that reduces origin load and latency for the static frontend assets served from S3. The alternative of serving the frontend directly from S3 with a public bucket endpoint would eliminate the CDN layer and expose the origin to higher latency for geographically distant users and unnecessary repeated requests for unchanged assets. CloudFront also integrates directly with AWS WAF and Amazon Cognito, which simplifies the security architecture by centralizing threat filtering at the edge.
 
-\subsubsection{Amazon API Gateway}
-\begin{itemize}
-    \item Exposes the platform's public API for device control, monitoring, onboarding, and automation management.
-    \item Serves as the primary application entry point for authenticated client requests.
-\end{itemize}
+\textbf{AWS WAF} was selected over third-party web application firewalls because of its native integration with CloudFront and API Gateway. Competing products such as Cloudflare or Fastly WAF offer comparable rule capabilities but require routing traffic through a third-party network, which introduces an external dependency and complicates the security boundary. AWS WAF keeps traffic inspection within the AWS network and provides managed rule groups that are updated by AWS in response to emerging threats without requiring operator intervention.
+
+\textbf{Amazon API Gateway} was chosen as the HTTPS API layer over alternatives such as AWS Application Load Balancer with Lambda targets or a containerized API server on Amazon ECS. API Gateway provides managed request validation, CORS handling, throttling, usage plans, and native Lambda integration, all without requiring the operator to manage or scale an API runtime process. The tradeoff is per-request pricing that becomes less favorable at very high request volumes compared to a fixed-cost load balancer, but at the scale of thousands of households this crossover does not occur.
 
 \subsection{Identity and Access Management}
-\subsubsection{Amazon Cognito}
-\begin{itemize}
-    \item Provides user authentication for the consumer-facing application.
-    \item Supports secure remote access and can enforce multi-factor authentication for higher assurance.
-\end{itemize}
+
+\textbf{Amazon Cognito} was selected for consumer identity management over self-hosted identity solutions (such as Keycloak or Auth0) and over building a custom authentication layer. Cognito handles user registration, sign-in flows, password recovery, MFA enforcement, and token issuance without application code involvement, which eliminates a class of authentication defects that commonly affect custom implementations. The limitation of Cognito is that its hosted UI is not highly customizable and its advanced workflow features (such as custom authentication challenges) require Lambda trigger functions; for a consumer product with specific UX requirements, these constraints must be evaluated against the operational savings.
 
 \subsection{Application and Automation Services}
-\subsubsection{AWS Lambda}
-\begin{itemize}
-    \item Implements backend business logic for device control, state retrieval, onboarding, and rule management.
-    \item Connects the user-facing API path to the IoT, storage, and workflow services.
-\end{itemize}
 
-\subsubsection{AWS Step Functions}
-\begin{itemize}
-    \item Coordinates multi-step automation workflows and event-driven orchestration.
-    \item Supports more complex automations than would be appropriate to model in a single function invocation.
-\end{itemize}
+\textbf{AWS Lambda} was chosen as the compute layer over containerized alternatives such as ECS Fargate or EC2 Auto Scaling groups. Lambda's consumption-based billing model means the platform pays only for the compute consumed during active request processing, which is strongly favorable for a workload with irregular traffic patterns and significant idle time between active household sessions. The primary limitation of Lambda in this architecture is cold-start latency: functions that have not been invoked recently incur an initialization delay. For latency-sensitive paths such as device command processing, provisioned concurrency is available to mitigate this at a higher per-hour cost.
 
-\subsubsection{Amazon SNS}
-\begin{itemize}
-    \item Delivers notifications and alerts to end users.
-    \item Supports automation outcomes such as security events, device warnings, and rule-triggered notifications.
-\end{itemize}
+\textbf{AWS Step Functions} was chosen for automation workflow orchestration over implementing workflows directly in Lambda. A Lambda function that needs to perform a sequence of operations — wait for a device acknowledgment, check a condition, then dispatch a notification — would need to manage its own state and retry logic, which increases complexity and reduces debuggability. Step Functions externalizes state management and provides a visual workflow representation that makes the behavior of complex automations auditable. The tradeoff is per-state-transition pricing, which makes Step Functions more expensive than direct Lambda invocation for simple trigger-action rules that do not benefit from orchestration.
+
+\textbf{Amazon SNS} was selected as the notification delivery layer because it provides managed fan-out delivery to multiple channels — mobile push, email, SMS — without requiring the platform to maintain connections to individual notification providers. An alternative would be Amazon SES for email combined with a third-party push notification service; SNS consolidates these into a single service with a common publishing API.
 
 \subsection{IoT Device Connectivity and Management}
-\subsubsection{AWS IoT Core}
-\begin{itemize}
-    \item Acts as the primary cloud entry point for smart-home devices.
-    \item Supports secure device connectivity, device messaging, and event ingestion for modular home units.
-\end{itemize}
 
-\subsubsection{AWS IoT Device Management}
-\begin{itemize}
-    \item Supports device onboarding, registration, fleet organization, and remote operational management.
-    \item Provides a high-level architectural answer for provisioning and over-the-air device updates.
-\end{itemize}
+\textbf{AWS IoT Core} was selected as the device message broker over self-operated MQTT brokers (such as Eclipse Mosquitto on EC2) or competing cloud IoT services. IoT Core provides managed TLS termination, per-device certificate authentication, and IoT rules that route messages to downstream services such as Lambda, DynamoDB, and Timestream without custom broker code. Self-operating an MQTT broker at scale introduces significant operational complexity around high availability, scaling, and certificate management that IoT Core handles as a managed service. The limitation of IoT Core is its per-message pricing, which accumulates quickly for high-frequency telemetry from large device fleets; however, at the household scale modeled in this architecture, it remains cost-effective.
+
+\textbf{AWS IoT Device Management} was included to support fleet-scale onboarding, grouping, and over-the-air update operations. The alternative is to implement device registration and update workflows entirely in application code using IoT Core's lower-level APIs; IoT Device Management reduces this to a higher-level operational interface and provides built-in audit trails for fleet operations.
 
 \subsection{Camera and Video Services}
-\subsubsection{Amazon Kinesis Video Streams}
-\begin{itemize}
-    \item Supports ingestion and delivery of camera video streams.
-    \item Separates high-bandwidth video traffic from the general IoT control and telemetry path.
-\end{itemize}
+
+\textbf{Amazon Kinesis Video Streams} was selected over routing camera output through IoT Core or directly to S3. IoT Core's message size limits make it unsuitable for video payloads. A direct-to-S3 pipeline would require a custom ingest endpoint on the device side and would not support low-latency live viewing without additional infrastructure. KVS provides a purpose-built managed ingest and playback layer for video that supports both live streaming and time-indexed archival retrieval. The cost of KVS storage is higher than equivalent S3 storage, which is the primary tradeoff discussed in the cost section.
 
 \subsection{Data Storage Services}
-\subsubsection{Amazon DynamoDB}
-\begin{itemize}
-    \item Stores operational platform data such as users, households, device metadata, and automation rules.
-    \item Serves as the primary low-latency data store for application state and configuration data.
-\end{itemize}
 
-\subsubsection{Amazon Timestream}
-\begin{itemize}
-    \item Stores time-series telemetry such as environmental readings, device health data, and sensor history.
-    \item Supports historical analysis and trend visualization for smart-home activity.
-\end{itemize}
+\textbf{Amazon DynamoDB} was chosen as the primary operational data store over a relational database such as Amazon Aurora or RDS. The platform's access patterns — fetching a household's device list, reading a single device's current state, updating automation rule configurations — are predominantly key-value lookups or small range queries that do not require relational joins. DynamoDB provides single-digit millisecond latency for these patterns at any scale, whereas a relational database would require connection pool management and would introduce query planning overhead for simple lookups. The tradeoff is that complex analytical queries across households or across time are not well-served by DynamoDB's data model; those queries are handled by Timestream or are served by exporting data to S3 for offline analysis.
 
-\subsubsection{Amazon S3}
-\begin{itemize}
-    \item Stores large objects and retained artifacts such as camera snapshots, archived media, and long-term data exports.
-    \item Provides durable low-cost storage for data that is not appropriate for transactional or time-series databases.
-\end{itemize}
+\textbf{Amazon Timestream} was selected for telemetry storage over storing time-series data in DynamoDB or in a self-managed time-series database such as InfluxDB. Timestream's data model is purpose-built for high-cardinality time-series ingestion and supports automatic data tiering between a memory store for recent data and a magnetic store for historical retention. Storing telemetry in DynamoDB would require careful schema design to avoid hot partitions and would not provide the time-windowed aggregation queries that Timestream supports natively. A self-managed time-series database would require the operational team to manage the database itself, which conflicts with the managed-services-first principle.
+
+\textbf{Amazon S3} is used for static frontend assets, camera archival, and long-term object storage because it is the most cost-effective durable object store available in AWS, with eleven nines of object durability and a simple HTTP API. No alternative is competitive with S3 for unstructured object storage within AWS.
 
 \subsection{Monitoring and Observability}
-\subsubsection{Amazon CloudWatch}
-\begin{itemize}
-    \item Provides centralized monitoring, logging, metrics, and alerting across the platform.
-    \item Supports operational visibility for APIs, application services, workflows, and IoT-related components.
-\end{itemize}
 
-\subsection{Summary of Architectural Role}
-\begin{itemize}
-    \item CloudFront, WAF, API Gateway, and Cognito support secure remote user access.
-    \item Lambda and Step Functions implement application behavior and automation orchestration.
-    \item AWS IoT Core and AWS IoT Device Management support secure device connectivity and lifecycle management.
-    \item Kinesis Video Streams supports camera-specific media delivery.
-    \item DynamoDB, Timestream, and S3 provide purpose-specific storage for operational data, telemetry, and media.
-    \item CloudWatch and SNS support observability and user-facing alerting.
-\end{itemize}
+\textbf{Amazon CloudWatch} was selected as the unified observability service over third-party alternatives such as Datadog or New Relic. CloudWatch is the native AWS observability plane: all AWS managed services emit metrics and logs to CloudWatch by default, which means operational data is available without additional instrumentation or log forwarding agents. Third-party observability platforms offer richer visualization and alerting features, but they require exporting data out of AWS and introduce an additional vendor dependency. For the initial platform launch, CloudWatch provides sufficient capability; migrating to a richer observability platform is a deferrable decision once the team's observability requirements are better understood.
