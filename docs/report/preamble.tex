@@ -1,0 +1,76 @@
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[utf8]{inputenc}
+  \usepackage[T1]{fontenc}
+  \usepackage{helvet}
+  % \renewcommand{\familydefault}{\sfdefault}
+\else
+  \usepackage{fontspec}
+  \setmainfont{Carlito}
+\fi
+\usepackage{setspace}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{refcount}
+\usepackage{hyperref}
+\usepackage{xurl}
+\usepackage[style=ieee]{biblatex}
+\addbibresource{references.bib}
+
+\titleformat{\section}
+  {\bfseries\fontsize{14pt}{16pt}\selectfont}
+  {\thesection}{1em}{}
+\titleformat{\subsection}
+  {\bfseries\normalsize}
+  {\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize}
+  {\thesubsubsection}{1em}{}
+
+\onehalfspacing
+\setlength{\headheight}{32pt}
+\setlength{\footskip}{32pt}
+\pagestyle{fancy}
+\fancyhf{}
+
+\newif\ifmainmatterpages
+\mainmatterpagesfalse
+\providecommand{\theHpage}{\arabic{page}}
+
+\newcommand{\frontmatterpagesetup}{%
+  \setcounter{page}{1}%
+  \renewcommand{\thepage}{\roman{page}}%
+  \renewcommand{\theHpage}{front.\roman{page}}%
+  \mainmatterpagesfalse%
+}
+\newcommand{\mainmatterpagesetup}{%
+  \setcounter{page}{1}%
+  \renewcommand{\thepage}{\arabic{page}}%
+  \renewcommand{\theHpage}{main.\arabic{page}}%
+  \mainmatterpagestrue%
+}
+\newcommand{\supplementpagesetup}{%
+  \setcounter{page}{1}%
+  \renewcommand{\thepage}{A.\arabic{page}}%
+  \renewcommand{\theHpage}{appendix.\arabic{page}}%
+  \mainmatterpagesfalse%
+}
+
+\fancyhead[L]{\parbox[t][\headheight][t]{0.48\textwidth}{\raggedright Cloud Architecture Report}}
+\fancyhead[R]{\parbox[t][\headheight][t]{0.48\textwidth}{\raggedleft LightsPlease IoT Kata\\Gruss, Harris}}
+\fancyfoot[L]{\shortstack[l]{CS7346 - Cloud Computing\\Spring 2026}}
+\fancyfoot[R]{%
+  \ifmainmatterpages
+    \shortstack[r]{Page \arabic{page}\ of \getpagerefnumber{LastMainPage}}%
+  \else
+    \shortstack[r]{Page \thepage}%
+  \fi
+}
+
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}

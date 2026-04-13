@@ -1,29 +1,17 @@
 \documentclass[12pt]{article}
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
-\usepackage{helvet}
-% \renewcommand{\familydefault}{\sfdefault}
-\usepackage{setspace}
-\usepackage[margin=1in]{geometry}
-\usepackage{graphicx}
-\usepackage{float}
-\usepackage{booktabs}
-\usepackage{multirow}
-\usepackage{hyperref}
-\usepackage{xurl}
-\usepackage[style=ieee]{biblatex}
-\addbibresource{references.bib}
-
-\onehalfspacing
-
-\title{}
-\author{Garrett Gruss and Blaine Harris}
-\date{\today}
+\input{preamble}
 
 \begin{document}
 
+% ── Title Page ────────────────────────────────────────────────────────────────
+\hypersetup{pageanchor=false}
+\input{title_page}
+\thispagestyle{empty}
+
 % ── Abstract (does not count toward page limit) ───────────────────────────────
-\newpage
+\clearpage
+\hypersetup{pageanchor=true}
+\frontmatterpagesetup
 \begin{abstract}
   \noindent
   % TODO: 1–2 paragraph abstract summarizing the problem, approach, and key
@@ -42,7 +30,8 @@
 % ─────────────────────────────────────────────────────────────────────────────
 %  BODY — pages below count toward the 15–20 page limit
 % ─────────────────────────────────────────────────────────────────────────────
-\newpage
+\clearpage
+\mainmatterpagesetup
 
 \input{sections/01_introduction}
 \input{sections/02_assumptions}
@@ -56,11 +45,13 @@
 \input{sections/10_cost/10_cost}
 \input{sections/11_risks}
 \input{sections/12_conclusion}
+\label{LastMainPage}
 
 % ─────────────────────────────────────────────────────────────────────────────
 %  References (do not count toward page limit)
 % ─────────────────────────────────────────────────────────────────────────────
-\newpage
+\clearpage
+\supplementpagesetup
 \printbibliography[title={References}]
 
 \end{document}
