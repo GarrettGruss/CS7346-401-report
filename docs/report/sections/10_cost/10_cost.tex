@@ -93,9 +93,16 @@ Tables~\ref{tab:sim-inputs} and~\ref{tab:pricing-constants} enumerate the simula
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\linewidth]{sections/10_cost/cost_distribution.png}
-  \caption{Monte Carlo cost distribution across 1,000 simulated households. Left: cost share by high-level category. Right: mean monthly cost per AWS service, colored by category.}
-  \label{fig:cost-distribution}
+  \includegraphics[width=0.8\linewidth]{../../data/cost_pie.png}
+  \caption{Cost share by high-level category across 1,000 simulated households (mean \$/user/month).}
+  \label{fig:cost-pie}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{../../data/cost_bar.png}
+  \caption{Mean monthly cost per AWS service across 1,000 simulated households, sorted ascending and color-coded by category.}
+  \label{fig:cost-bar}
 \end{figure}
 
 The simulation produced a mean total cost of \$23.12 per household per month across the 1,000-user population, equivalent to a fleet-wide cost of approximately \$23,100 per month, or \$277,400 per year, at this scale. Costs decompose into three high-level categories: storage at approximately 62\% of total spend, compute at approximately 32\%, and network egress at approximately 6\%.
