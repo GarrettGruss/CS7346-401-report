@@ -12,3 +12,7 @@ Kata report for CS7346-401 | Blaine Harris and Garrett Gruss | LightsPlease
 
 texlive-bibtex-extra
 texlive-full
+
+## LaTeX engine
+
+The report in `docs/report` is configured to build with `xelatex` via `docs/report/latexmkrc` so the `fontspec` setup in the preamble uses `Carlito` consistently.
