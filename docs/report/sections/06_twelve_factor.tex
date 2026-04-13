@@ -1,62 +1,32 @@
 % ── 6. Cloud-Native Application Design (Twelve-Factor App) ───────────────────
 \section{Cloud-Native Application Design}
 
-The Twelve-Factor App methodology \cite{twelve-factor} describes a set of principles for building software-as-a-service applications that are portable, maintainable, and scalable in cloud environments. While the methodology was originally articulated for traditional long-running server processes, its principles apply meaningfully to serverless and event-driven architectures. The sections below address each factor in the context of the LightsPlease platform, noting where the serverless deployment model satisfies a factor automatically, where deliberate design decisions are required, and where a factor is partially inapplicable but has an analogue in the IoT or function-as-a-service context.
-
 \subsection{Codebase}
 
-% TODO: One codebase tracked in version control, many deploys. Each Lambda function lives in the same monorepo or a service-separated repo. Deployments to dev, staging, and production share the same codebase with different environment configurations.
-
-The platform maintains a single version-controlled codebase per deployable unit. Lambda functions, Step Functions state machine definitions, IoT rule configurations, and infrastructure-as-code templates are all tracked in version control. Multiple deployments — development, staging, and production — are derived from the same codebase, differentiated only by environment-specific configuration. This ensures that what is tested in staging is structurally identical to what runs in production.
-
-\subsection{Dependencies}
-
-All Lambda function dependencies are declared explicitly in package manifests (for example, \texttt{requirements.txt} or \texttt{package.json}) and resolved at build time into deployment artifacts. No dependency is assumed to be pre-installed in the execution environment. Lambda layers are used for shared libraries that would otherwise be duplicated across function packages. This approach ensures that function dependencies are reproducible and that the runtime environment is fully specified rather than implicitly inherited.
+The cloud-side platform aligns with the codebase factor by treating the backend services and infrastructure definitions as version-controlled artifacts that support multiple deployments. This is important because the same system must be promoted across development, staging, and production without creating drift between environments. The tradeoff is that this approach depends on disciplined source control and release practices, but it makes changes easier to track, review, and reproduce.
 
 \subsection{Config}
 
-% TODO: Environment-specific configuration (e.g., DynamoDB table names, IoT endpoint URLs, SNS topic ARNs) is stored in AWS Systems Manager Parameter Store or AWS Secrets Manager and injected into Lambda functions as environment variables at deploy time. No configuration is hardcoded in application code.
-
-Configuration that varies between deployment environments — DynamoDB table names, IoT Core endpoints, SNS topic ARNs, retention thresholds — is stored externally in AWS Systems Manager Parameter Store or AWS Secrets Manager and injected into Lambda execution environments as environment variables. No environment-specific values are hardcoded in application code, which means the same function artifact can be deployed to development, staging, or production by varying the configuration layer alone.
+Configuration is kept separate from application logic so that environment-specific values can change without requiring code changes. This is especially important for a platform that will operate across multiple environments and may evolve over time as endpoints, secrets, and service identifiers change. The tradeoff is that externalized configuration improves flexibility and security, but it also increases the need for careful configuration management and validation.
 
 \subsection{Backing Services}
 
-The architecture treats all downstream services — DynamoDB, Timestream, S3, IoT Core, SNS, Step Functions — as attached resources accessed via URL or ARN. Lambda functions do not embed assumptions about the physical location or instance identity of these services; they interact through the AWS SDK using resource identifiers resolved from environment configuration. Swapping a backing service (for example, replacing Timestream with a different time-series store) would require only a configuration change and a function update, not a structural rewrite.
+The architecture fits the backing services principle by treating databases, storage, messaging, and workflow services as attached resources rather than tightly embedding them into the application layer. This is a strong fit for the kata because the platform depends on managed services for telemetry, user data, automation, and archived content. The tradeoff is that this improves modularity and maintainability, but it also increases dependence on AWS-managed service patterns.
 
 \subsection{Build, Release, Run}
 
-% TODO: CI/CD pipeline produces immutable build artifacts (Lambda ZIPs or container images). A release combines a build artifact with a specific configuration version. Deployment to production is a separate step from building. Lambda versioning and aliases support immutable release identifiers and traffic shifting.
+The design also aligns well with build, release, and run as separate concerns. This matters because a consumer platform controlling household devices should support repeatable deployments and safe rollback when changes introduce faults. The tradeoff is that a cleaner release process improves reliability, but it also requires stronger CI/CD discipline and more structured deployment workflows.
 
-Lambda deployment follows a strict separation of build, release, and run phases. The build stage produces an immutable deployment package. The release stage combines that package with an environment-specific configuration version. The run stage deploys the release to the target environment. Lambda function versions and aliases provide immutable release identifiers; a published version cannot be modified after the fact, and traffic-shifting via weighted aliases enables incremental rollouts and instant rollback.
+\subsection{Processes and Concurrency}
 
-\subsection{Processes}
-
-Lambda functions are stateless and share-nothing by design. Each invocation begins with no assumption about prior invocations and leaves no in-process state that persists to future invocations. All state is delegated to backing services: operational state to DynamoDB, time-series data to Timestream, media to S3, and workflow state to Step Functions. This aligns directly with the Twelve-Factor principle that processes should be stateless and that state should live in a stateful backing service.
-
-\subsection{Port Binding}
-
-The port-binding factor, which specifies that a web application should export its HTTP interface by binding to a port, does not apply directly to a serverless architecture. API Gateway performs the equivalent function: it exposes a stable HTTPS endpoint and routes requests to Lambda functions without requiring those functions to bind to a port or manage their own HTTP server. The principle behind the factor — that the application should be self-contained and not depend on a runtime-injected web server — is satisfied because Lambda functions are independently deployable units that declare their own handler interface.
-
-\subsection{Concurrency}
-
-% TODO: Lambda concurrency scales horizontally by instantiating parallel execution environments. IoT Core scales message broker connections independently. DynamoDB on-demand capacity scales read and write throughput. Reserved concurrency limits protect downstream services from being overwhelmed by a single Lambda path.
-
-The architecture handles concurrency through horizontal scaling of stateless Lambda execution environments rather than through threading within a single process. Lambda can run thousands of concurrent function instances, each handling a single request, which avoids the complexity of multi-threaded state management. Reserved concurrency limits are applied to critical Lambda functions to ensure that a spike in one traffic path (for example, a surge of IoT-triggered events) cannot exhaust the total concurrency budget and starve the user-facing API path.
-
-\subsection{Disposability}
-
-Lambda functions are inherently disposable: execution environments are created on demand and destroyed after a configurable idle period. There is no warm-up sequence required before a function can serve requests, and no shutdown procedure that must complete gracefully — Lambda manages the lifecycle automatically. IoT Core device connections tolerate disconnection and reconnection transparently through the MQTT protocol's session persistence features. Step Functions workflows are durable against execution environment termination because state is persisted externally; a function that fails mid-execution can be retried without data loss.
+The backend is designed around stateless compute and horizontal scaling, which makes the processes and concurrency factors highly relevant. This supports the expected growth to thousands of households by allowing the platform to handle more requests and device events through scale-out behavior instead of relying on larger individual servers. The tradeoff is that stateless scaling improves elasticity, but it pushes more responsibility onto external services for state management and coordination.
 
 \subsection{Dev/Prod Parity}
 
-% TODO: Infrastructure-as-code (e.g., AWS CDK or SAM) provisions identical service topologies in each environment. DynamoDB table schemas, IoT rule configurations, and Step Functions state machines are defined in code and applied identically across environments. The primary intentional difference between dev and prod is scale (e.g., DynamoDB on-demand vs. provisioned in prod).
+Dev/prod parity is important because differences between environments can easily hide defects until they reach production. The architecture supports this by keeping environments structurally similar and by defining infrastructure in code rather than rebuilding it manually for each stage. The tradeoff is that closer parity reduces deployment surprises, but it can increase development cost compared to using lighter local substitutes.
 
-Infrastructure-as-code templates (AWS CDK or AWS SAM) ensure that the development and production environments are structurally identical. The same service types, IAM policies, and resource configurations are deployed in each environment. The gap between development and production is kept small deliberately: where a developer tests against a live DynamoDB table in a sandbox account, not a mocked in-memory substitute, because behavioral differences between mocks and the real service have historically been a source of defects that only surface in production.
+\subsection{Logs and Admin Processes}
 
-\subsection{Logs}
+Logs and admin processes are also strong fits for this architecture. Centralized logs are important because the platform spans multiple managed services and asynchronous workflows, while one-off administrative tasks such as cleanup, maintenance, and reporting should remain separate from the main request path. The tradeoff is that this separation improves observability and operational control, but it adds some overhead in monitoring, automation, and access management.
 
-All Lambda functions emit structured logs to Amazon CloudWatch Logs using a consistent log format. IoT Core, API Gateway, and Step Functions are configured to emit execution logs to CloudWatch as well. Log events are treated as an ordered stream of time-stamped records rather than as files written to disk. CloudWatch Logs Insights allows operational queries over the full log stream without requiring a separate log aggregation service. Logs are never written to local disk within a Lambda execution environment; because execution environments are ephemeral and may not be reused, any locally written data is non-durable.
-
-\subsection{Admin Processes}
-
-One-off administrative tasks — data migrations, backups, fleet-wide device commands, report generation — are implemented as discrete Lambda functions or Step Functions workflows invoked on demand rather than as scripts run manually on production servers. This ensures that administrative operations are versioned, auditable, and subject to the same IAM access controls as the rest of the platform. Scheduled administrative tasks, such as purging expired telemetry or generating billing summaries, are triggered by Amazon EventBridge on a defined schedule.
+Some Twelve-Factor ideas are less central here. Port binding is only partially applicable because managed entry points such as API Gateway expose the application on behalf of the backend, and disposability is largely handled by the serverless platform rather than by long-running application processes. For that reason, the most relevant factors for this design are the ones tied to deployment consistency, externalized state, attached services, and operational separation.
