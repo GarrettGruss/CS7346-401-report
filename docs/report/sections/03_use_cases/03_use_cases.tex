@@ -3,8 +3,6 @@
 
 The system is composed of three core actors -- the \textbf{Consumer}, a user of the system, the \textbf{Device Controller}, responsible for orchestrating control of the devices, and the \textbf{Platform Operator}, responsible for maintaining services.
 
-In a typical operational profile of this system, a consumer will purchase several devices and connect them to the internet via their personal wifi. The consumer will interact with the devices remotely either through an app on their phone or a web interface. The consumer is assumed to be non-technical, and will perform operations such as locking doors, viewing camera streams, and configuring rules such as locking schedules or thermostat schedules. The device controller, installed on each physical hardware system integrated within the system will be designed by a third party, and will be responsible for connecting to wifi or bluetooth and being available for connection with the cloud platform. The platform operator will be responsible for observing operational logs and remediating coverage issues, such as bugs in the system, service outtages, or delivering feature requests to enable future expansion of the system.
-
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.6\linewidth]{sections/03_use_cases/conops.png}
@@ -12,78 +10,30 @@ In a typical operational profile of this system, a consumer will purchase severa
   \label{fig:conops}
 \end{figure}
 
+In a typical operational profile of this system, a consumer will purchase several devices and connect them to the internet via their personal wifi. The consumer will interact with the devices remotely either through an app on their phone or a web interface. The consumer is assumed to be non-technical, and will perform operations such as locking doors, viewing camera streams, and configuring rules such as locking schedules or thermostat schedules. The device controller, installed on each physical hardware system integrated within the system will be designed by a third party, and will be responsible for connecting to wifi or bluetooth and being available for connection with the cloud platform. The platform operator will be responsible for observing operational logs and remediating coverage issues, such as bugs in the system, service outtages, or delivering feature requests to enable future expansion of the system.
+
+
 \subsection{Workflows}
+
+\begingroup
+\setlength{\parindent}{0pt}
 
 \textbf{UC-01: Remote Device Control.} A Consumer opens the frontend application, authenticates, and issues a command to a registered module --- such as locking a door or turning off a light. The platform validates the request, delivers the command to the target Device Controller, and reflects the confirmed state change in the dashboard in near-real time.
 
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=\linewidth]{sections/03_use_cases/use_cases-1.png}
-  \caption{UC-01: Remote Device Control}
-  \label{fig:uc-01}
-\end{figure}
-
 \textbf{UC-02: Remote Camera Monitoring.} A Consumer requests either a live stream or a recording from a specified time window via the frontend application. The platform retrieves and returns a playback-ready resource, driving the media ingestion, storage, and retrieval requirements of the architecture.
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=\linewidth]{sections/03_use_cases/use_cases-2.png}
-  \caption{UC-02: Remote Camera Monitoring}
-  \label{fig:uc-02}
-\end{figure}
 
 % This use case might be out of scope for the project
 \textbf{UC-03: Automation Rule Programming.} A Consumer defines trigger-action rules in the frontend --- for example, locking all doors at 10:00 PM or activating lights when motion is detected --- and the platform persists and registers them for evaluation. At runtime, the platform evaluates active rules against incoming device events and scheduled triggers, dispatching commands to the appropriate Device Controllers when conditions are met.
 
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=\linewidth]{sections/03_use_cases/use_cases-3.png}
-  \caption{UC-03: Automation Rule Programming}
-  \label{fig:uc-03}
-\end{figure}
-
 \textbf{UC-04: Device Registration and Household Setup.} When a Consumer powers on a new module, it connects to the household WiFi and initiates a registration handshake with the platform, which assigns the device a unique identity and associates it with the Consumer's household. This use case also covers initial household onboarding, including account creation and WiFi credential provisioning.
 
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=\linewidth]{sections/03_use_cases/use_cases-4.png}
-  \caption{UC-04: Device Registration and Household Setup}
-  \label{fig:uc-04}
-\end{figure}
-
 \textbf{UC-05: Event Notification and Alerting.} A Consumer configures alert preferences in the frontend, specifying which event types and modules should trigger notifications and which delivery channels --- push, SMS, or email --- to use. When a qualifying event is published by a Device Controller, the platform evaluates it against the Consumer's preferences and dispatches an alert through the appropriate channel.
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=\linewidth]{sections/03_use_cases/use_cases-5.png}
-  \caption{UC-05: Event Notification and Alerting}
-  \label{fig:uc-05}
-\end{figure}
 
 % This use case might be out of scope for the project
 \textbf{UC-06: Access Delegation.} A Consumer invites a secondary household member via the frontend, assigning a scoped permission profile that restricts their access to designated modules and operations. The platform's authorization model supports per-module, per-user grants that the primary account holder can modify or revoke at any time.
 
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=\linewidth]{sections/03_use_cases/use_cases-6.png}
-  \caption{UC-06: Access Delegation}
-  \label{fig:uc-06}
-\end{figure}
-
 \textbf{UC-07: Historical Event and Activity Review.} A Consumer queries the event log in the frontend by device, event type, or date range, and the platform returns matching records along with any associated media clips. This use case drives the data retention and indexing requirements of the storage layer, as Consumers expect to query history spanning days to months with acceptable response times.
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=\linewidth]{sections/03_use_cases/use_cases-7.png}
-  \caption{UC-07: Historical Event and Activity Review}
-  \label{fig:uc-07}
-\end{figure}
 
 \textbf{UC-08: Platform Operations and Fleet Monitoring.} A Platform Operator monitors service health, device connectivity, and business metrics through internal dashboards, and is alerted by the platform when threshold breaches --- such as elevated device connection failures --- require investigation. This use case also covers deployment of platform software updates and issuance of firmware update jobs to Device Controllers across the fleet.
 
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=\linewidth]{sections/03_use_cases/use_cases-8.png}
-  \caption{UC-08: Platform Operations and Fleet Monitoring}
-  \label{fig:uc-08}
-\end{figure}
+\endgroup

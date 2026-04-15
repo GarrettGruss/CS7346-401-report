@@ -5,9 +5,9 @@
 
 The cloud-side platform aligns with the codebase factor by treating the backend services and infrastructure definitions as version-controlled artifacts that support multiple deployments. This is important because the same system must be promoted across development, staging, and production without creating drift between environments. The tradeoff is that this approach depends on disciplined source control and release practices, but it makes changes easier to track, review, and reproduce.
 
-\subsection{Config}
+\subsection{Configuration}
 
-Configuration is kept separate from application logic so that environment-specific values can change without requiring code changes. This is especially important for a platform that will operate across multiple environments and may evolve over time as endpoints, secrets, and service identifiers change. The tradeoff is that externalized configuration improves flexibility and security, but it also increases the need for careful configuration management and validation.
+Configuration is kept separate from application logic so that environment specific values can change without requiring code changes. This is especially important for a platform that will operate across multiple environments and may evolve over time as endpoints, secrets, and service identifiers change. The tradeoff is that externalized configuration improves flexibility and security, but it also increases the need for careful configuration management and validation.
 
 \subsection{Backing Services}
 

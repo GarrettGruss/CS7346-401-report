@@ -1,20 +1,32 @@
 % ── 8. Cloud Services Selection and Justification ────────────────────────────
 \section{Cloud Services Selection and Justification}
 
-The system is built entirely on AWS, as this provider offers the most comprehensive suite of managed services for IOT device management. The table below summarizes each selected service and its role.
+This section focuses on the major AWS services used in the LightsPlease architecture. Each service description is intentionally concise and separates what the service offers from how it is used and why it was selected for this project.
 
-\begin{itemize}
-  \item \textbf{Amazon CloudFront} --- Delivers static assets and cacheable content to consumers via AWS edge locations, reducing latency for the web and mobile frontend.
-  \item \textbf{AWS WAF} --- Filters inbound requests for common web exploits and abusive traffic patterns before they reach backend services.
-  \item \textbf{Amazon Cognito} --- Manages consumer identity, authentication flows, token issuance, and optional multi-factor authentication.
-  \item \textbf{Amazon API Gateway} --- Provides the managed HTTPS entry point for all client requests, handling routing, throttling, and authorization enforcement.
-  \item \textbf{AWS Lambda} --- Executes stateless control-plane logic --- command validation, event processing, and integration tasks --- in response to API and messaging events.
-  \item \textbf{AWS Step Functions} --- Orchestrates multi-step automation workflows that require branching, waiting, retries, and explicit state tracking.
-  \item \textbf{AWS IoT Core} --- Provides secure MQTT messaging, device identity, and policy enforcement for all non-video Device Controllers.
-  \item \textbf{Amazon Kinesis Video Streams} --- Ingests, buffers, and retrieves camera feeds, providing a dedicated pipeline for video traffic separate from device telemetry.
-  \item \textbf{Amazon DynamoDB} --- Stores current device state, automation definitions, household configuration, and command status with low-latency key-value access.
-  \item \textbf{Amazon Timestream} --- Stores time-ordered sensor telemetry --- temperature history, motion events, power readings --- with retention policies suited to time-series data.
-  \item \textbf{Amazon S3} --- Provides durable object storage for archived video clips, camera snapshots, and retained log files.
-  \item \textbf{Amazon CloudWatch} --- Centralizes logs, metrics, alarms, and dashboards for operational visibility across all platform services.
-  \item \textbf{Amazon SNS} --- Delivers consumer alert notifications --- push, SMS, and email --- and fans out internal platform events to downstream subscribers.
-\end{itemize}
+\textbf{Amazon CloudFront} provides edge caching and content delivery for static assets, media, and other cacheable responses. This is selected over a self-managed content delivery network (CDN) due to the tighter integration with AWS edge security controls allowing for faster delivery. This comes at the trade-off of less configurability but for our needs is a less complex solution than operating a self-managed edge stack.
+
+\textbf{AWS Web Application Firewall (WAF)} provides request filtering for common web exploits, abusive traffic, and unwanted request patterns before they reach backend services. Application validation alone does not provide enough security and a self-hosted firewall tier would add more operational overhead. Using WAF provides managed rule enforcement and direct integration with the rest of the ingress path. The primary trade-offs once again come at the cost of configurability and additional risk of false-positives, however given the scope of this project these were deemed acceptable. 
+
+\textbf{Amazon Cognito} provides customer identity management, token issuance, sign-in flows, and optional multi-factor authentication. LightsPlease is intended to be a consumer facing product, so the goal is to offload security from the user interface wherever possible. Utilizing Cognito allows LightsPlease to integrate an existing identity management solution that is already compatible with our ingress path. Its main advantages are reduced implementation effort and clean integration with AWS services. Services such as LightsPlease are not novel, so the benefits of building our own workflows and identity solutions do not overcome the inherent complexity and tech debt.
+
+\textbf{Amazon API Gateway} provides the managed HTTPS entry point for client requests and supports routing, throttling, authorization hooks, and policy enforcement. The architecture's public control plane is API-driven and event-oriented, so a permanently running web tier on EC2 or ECS would add additional operational overhead. The main limitations are per-request cost and service limits for payload size, timeout, and request patterns.
+
+\textbf{AWS Lambda} provides event-driven compute for stateless request handling, command validation, automation triggers, and integration logic. Lambda was selected because household activity is often bursty, consists of small independent tasks, triggered by unpredictable events. Utilizing an always on server to host the control plane would result in additional cost. This implementation has the added benefit of being much easier to scale with minimal administrative overhead, with the trade-off being execution time limits, cold starts, and less suitability for long-lived connections.
+
+\textbf{AWS Step Functions} provides managed workflow orchestration for multi-step automations that need branching, waiting, retries, and state tracking. The architecture uses it because customer-defined routines become difficult to manage when the entire workflow lives inside individual Lambda functions. It gives the design clearer workflow visibility and better control flow than a custom orchestration layer embedded in application code. Its main advantages are explicit state handling and built-in retry behavior. Its main limitations are extra architectural complexity and per-state-transition cost, but those are reasonable tradeoffs for avoiding a self-managed workflow engine.
+
+\textbf{AWS IoT Core} provides secure device messaging, device identity, and message routing for lights, locks, thermostats, sensors, and other non-video modules. This keeps device authentication, policy enforcement, and broker operations inside a service built specifically for IoT workloads. The trade-off is tighter AWS coupling and per-message cost, but for this project that is preferable to taking on the security and maintenance burden of a self-managed broker layer.
+
+\textbf{Amazon Kinesis Video Streams} provides managed ingest, buffering, and retrieval for camera feeds and other video-heavy device traffic. This is required because video has vastly different data pipeline than ordinary device telemetry. Using a dedicated video service also avoids building and operating a custom streaming backend from scratch. The main trade-offs are higher cost and a more specialized integration path, but those are reasonable given the added complexity of self-managing video streaming.
+
+\textbf{Amazon DynamoDB} is a serverless, managed database built around a distributed NoSQL database that is focused on consistent scalable performance. This is utilized to record operational device metadata such as device state, automation definitions, household configuration, and command status with low latency. For example, these performance gains will reduce the amount of time between commanding a light on and the action actually taking place. The largest trade-off here is access patterns need to be carefully designed up front and ad hoc querying is more limited.
+
+\textbf{Amazon Timestream} provides managed time-series storage for telemetry such as temperature history, motion events, and power usage readings. This provides an efficient way to record historical sensor data, which has a different retention and query patterns than current device state. This adds some additional design complexity, but does allow for time-ordered data to be stored more efficiently than if it was bundled in a monolithic database with the state data.
+
+\textbf{Amazon S3} provides durable object storage for archived logs, retained video clips, camera snapshots, and other backend files that do not fit cleanly into the database layer. The architecture includes this to provide storage for files such as archived logs, video recordings, and camera snapshots to be stored for future access. The primary trade-offs are higher retrieval latency than database-backed storage and the need to manage lifecycle, retention, and access policies carefully.
+
+\textbf{Amazon CloudWatch} provides centralized logs, metrics, alarms, and dashboards to trace failures, monitor health, and alert on abnormal behavior across the AWS environment. CloudWatch is utilized to provide operational visibility which integrates directly with the rest of the AWS based architecture. This once again, somewhat locks this design into the AWS ecosystem, but since the entire architecture is built on AWS, this is a reasonable trade-off. 
+
+\textbf{Amazon SNS} provides lightweight pub-sub messaging and fan-out notifications for alerts, status updates, and downstream event consumers. This keeps the notification path simple and loosely coupled without turning it into a full orchestration layer, with the trade-off being the requirement to use Step Functions for workflows themselves instead of an integrated solution.
+
+Together, these services support the major needs of the kata: secure Internet access, managed device connectivity, automation, telemetry ingestion, camera streaming, operational visibility, and scalable storage \cite{aws-docs}

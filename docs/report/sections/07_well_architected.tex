@@ -19,7 +19,7 @@ Performance efficiency matters because the platform must keep remote control and
 
 \subsection{Cost Optimization}
 
-ost optimization is discussed in detail in Section~\ref{sec:cost}. From a Well-Architected perspective, the design follows the key cost optimization principles by using consumption-based pricing (Lambda on-demand, DynamoDB on-demand), avoiding idle resource costs, and matching the resource type to the workload. The primary area where the architecture accepts higher cost in exchange for capability is Kinesis Video Streams, which carries a higher storage cost than a direct-to-S3 archival model but enables the live streaming capability that is central to the product's camera use case.
+Cost optimization is discussed in detail in Section~\ref{sec:cost}. From a Well-Architected perspective, the design follows the key cost optimization principles by using consumption-based pricing (Lambda on-demand, DynamoDB on-demand), avoiding idle resource costs, and matching the resource type to the workload. The primary area where the architecture accepts higher cost in exchange for capability is Kinesis Video Streams, which carries a higher storage cost than a direct-to-S3 archival model but enables the live streaming capability that is central to the product's camera use case.
 
 As the platform scales, the cost optimization path involves migrating DynamoDB tables with predictable traffic to provisioned capacity with auto-scaling, evaluating S3 Intelligent-Tiering for camera archival objects, and monitoring Lambda function memory allocation against actual utilization to right-size function configurations.
 
