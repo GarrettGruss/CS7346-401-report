@@ -3,24 +3,22 @@
 
 The proposed architecture reduces many operational and technical risks by using managed AWS services, strong identity controls, and durable cloud storage, but several important risks remain. The most significant risks for this platform involve device trust, regional availability, cost growth, performance variability, and long-term platform dependence.
 
-\subsection{Device Security and Protocol Misuse}
+\subsection{R-01: Device Security and Protocol Misuse}
 
-Because the platform controls physical household devices, a compromised device or poorly constrained protocol could allow false telemetry, unauthorized commands, or attempts to access other devices. The design mitigates this through device-specific identities, scoped permissions, encrypted communication, and separation between device identity and user identity. Residual risk remains because device firmware and hardware protections are implemented by other teams, so the cloud platform must continue to treat device input as potentially untrusted.
+Because the platform controls physical household devices, a compromised device or poorly constrained protocol could allow false telemetry, unauthorized commands, or attempts to access other devices. The design mitigates this through device-specific identities, scoped permissions, encrypted communication, and separation between device identity and user identity.
 
-\subsection{Single-Region Availability}
+\subsection{R-02: Single-Region Availability}
 
-The initial design is intentionally deployed in a single AWS region to reduce cost and complexity, but this creates a risk that a major regional outage could interrupt service for all households at once. This is partly mitigated by using managed regional services and multi-Availability Zone data services, which improve resilience to routine infrastructure and zonal failures. Residual risk remains for a full regional disruption, and addressing that risk would require a future multi-region design with additional replication, failover, and operational complexity.
+The initial design is intentionally deployed in a single AWS region to reduce cost and complexity, but this creates a risk that a major regional outage could interrupt service for all households at once. This is partly mitigated by using managed regional services and multi-Availability Zone data services, which improve resilience to routine infrastructure and zonal failures. Fully addressing this risk would require a future multi-region design with additional replication, failover, and operational complexity.
 
-\subsection{Cost Growth}
-
-\subsection{Camera Storage Cost Overrun}
+\subsection{R-03: Camera Storage Cost Overrun}
 
 As analyzed in Section~\ref{sec:cost}, KVS storage costs are the dominant cost driver for camera-equipped households and scale non-linearly with camera count and retention period. If camera adoption exceeds the 45\% rate assumed in the cost model, or if the default retention policy is set to 30 or 90 days, fleet-wide storage costs could significantly exceed projections. The architecture mitigates this by favoring usage-based services, enforcing retention limits, and separating higher-cost media workloads from normal control and telemetry paths. Residual risk remains because consumer behavior, camera adoption, and retention choices can still increase costs faster than expected, so ongoing monitoring and policy controls will be necessary.
 
-\subsection{Performance Variability}
+\subsection{R-04: Performance Variability}
 
-Consumers expect remote commands such as locking a door or changing a thermostat to feel responsive, but latency can increase during traffic spikes, cold starts, or poor household network conditions. The architecture mitigates this through stateless compute, managed messaging services, and a relatively direct command path between the client, cloud platform, and device. Residual risk remains because some latency factors, especially home internet and device-side responsiveness, are outside the control of the cloud platform.
+Consumers expect remote commands such as locking a door or changing a thermostat to feel responsive, but latency can increase during traffic spikes, cold starts, or poor household network conditions. The architecture mitigates this through stateless compute, managed messaging services, and a relatively direct command path between the client, cloud platform, and device.
 
-\subsection{Platform Dependence and Future Change}
+\subsection{R-05: Platform Dependence and Future Change}
 
 The design relies heavily on AWS-managed services, which improves delivery speed and reduces operational burden, but also increases dependence on AWS-specific services and patterns. This is mitigated by keeping the business logic as cleanly separated as practical from infrastructure configuration and by documenting major service dependencies and assumptions. Residual risk remains because a future migration to another cloud provider, or new privacy and compliance requirements for consumer device data, would still require meaningful architectural change.
