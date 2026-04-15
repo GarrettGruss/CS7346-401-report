@@ -6,12 +6,12 @@ Kata report for CS7346-401 | Blaine Harris and Garrett Gruss | LightsPlease
 # Instructions
 - [Install draw.io extension](https://marketplace.visualstudio.com/items?itemName=hediet.vscode-drawio)
 - [Install LaTeX workshop](https://marketplace.visualstudio.com/items?itemName=James-Yu.latex-workshop)
-- [Install dev containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
 
 ## texlive packages
 
 texlive-bibtex-extra
 texlive-full
+texlive-fonts-extra
 
 ## LaTeX engine
 

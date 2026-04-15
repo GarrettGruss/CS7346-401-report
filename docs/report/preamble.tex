@@ -1,13 +1,6 @@
-\usepackage{iftex}
-\ifPDFTeX
-  \usepackage[utf8]{inputenc}
-  \usepackage[T1]{fontenc}
-  \usepackage{helvet}
-  % \renewcommand{\familydefault}{\sfdefault}
-\else
-  \usepackage{fontspec}
-  \setmainfont{Carlito}
-\fi
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[sfdefault]{carlito}
 \usepackage{setspace}
 \usepackage[margin=1in]{geometry}
 \usepackage{graphicx}
@@ -19,7 +12,7 @@
 \usepackage{refcount}
 \usepackage{hyperref}
 \usepackage{xurl}
-\usepackage[style=ieee]{biblatex}
+\usepackage[style=ieee,backend=bibtex]{biblatex}
 \addbibresource{references.bib}
 
 \titleformat{\section}
@@ -61,8 +54,8 @@
   \mainmatterpagesfalse%
 }
 
-\fancyhead[L]{\parbox[t][\headheight][t]{0.48\textwidth}{\raggedright Cloud Architecture Report}}
-\fancyhead[R]{\parbox[t][\headheight][t]{0.48\textwidth}{\raggedleft LightsPlease IoT Kata\\Gruss, Harris}}
+\fancyhead[L]{\parbox[t]{0.48\textwidth}{\raggedright Cloud Architecture Report}}
+\fancyhead[R]{\parbox[t]{0.48\textwidth}{\raggedleft LightsPlease IoT Kata\\Gruss, Harris}}
 \fancyfoot[L]{\shortstack[l]{CS7346 - Cloud Computing\\Spring 2026}}
 \fancyfoot[R]{%
   \ifmainmatterpages

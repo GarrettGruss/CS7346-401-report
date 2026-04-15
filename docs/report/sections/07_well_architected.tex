@@ -26,5 +26,3 @@ As the platform scales, the cost optimization path involves migrating DynamoDB t
 \subsection{Sustainability}
 
 The architecture also aligns reasonably well with the sustainability pillar because managed and serverless services reduce idle resource usage and improve shared infrastructure utilization. The main sustainability pressure in this design is continuous camera processing and storage, so the architecture is better aligned when motion-triggered recording is the default and longer or continuous recording is treated as an explicit premium option. The tradeoff is that reducing always-on media processing lowers both environmental impact and cost, but it may also limit convenience for users who expect continuous recording by default.
-\subsection{Cost Optimization}
-
