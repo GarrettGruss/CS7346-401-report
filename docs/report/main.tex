@@ -6,16 +6,14 @@
 % ── Title Page ────────────────────────────────────────────────────────────────
 \hypersetup{pageanchor=false}
 \input{title_page}
-\thispagestyle{empty}
+% \thispagestyle{empty}
 
 % ── Abstract (does not count toward page limit) ───────────────────────────────
 \clearpage
-\hypersetup{pageanchor=true}
+% \hypersetup{pageanchor=true}
 \frontmatterpagesetup
 \begin{abstract}
-  \noindent
-  % TODO: 1–2 paragraph abstract summarizing the problem, approach, and key
-  % architectural decisions.
+This report presents LightsPlease, a cloud-native home automation architecture built on AWS for consumer households using modular devices such as lights, locks, thermostats, and cameras. The proposed solution is designed to support secure remote monitoring and control, user-defined automation, real-time device interaction, and a simple onboarding experience while scaling to thousands of homes and tens of thousands of connected devices. The architecture emphasizes managed services to balance scalability, availability, security, maintainability, and cost efficiency within the scope of the kata. This paper explains the system requirements, architectural decisions, major service selections, and the key tradeoffs, risks, and mitigation strategies that shape the overall design. 
 \end{abstract}
 
 % ── Table of contents (does not count toward page limit) ─────────────────────
