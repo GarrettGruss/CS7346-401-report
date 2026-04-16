@@ -1,7 +1,7 @@
 % ── 3. Use Cases and Actors ───────────────────────────────────────────────────
 \section{Use Cases and Actors}
 
-The system is composed of three core actors -- the \textbf{Consumer}, a user of the system, the \textbf{Device Controller}, responsible for orchestrating control of the devices, and the \textbf{Platform Operator}, responsible for maintaining services.
+The system is composed of three primary actors the \textbf{Consumer}, a user of the system, the \textbf{Device Controller}, the embedded control software on each module responsible for local device operation and cloud connectivity, and the \textbf{Platform Operator}, responsible for maintaining services.
 
 \begin{figure}[H]
   \centering
@@ -10,7 +10,7 @@ The system is composed of three core actors -- the \textbf{Consumer}, a user of 
   \label{fig:conops}
 \end{figure}
 
-In a typical operational profile of this system, a consumer will purchase several devices and connect them to the internet via their personal wifi. The consumer will interact with the devices remotely either through an app on their phone or a web interface. The consumer is assumed to be non-technical, and will perform operations such as locking doors, viewing camera streams, and configuring rules such as locking schedules or thermostat schedules. The device controller, installed on each physical hardware system integrated within the system will be designed by a third party, and will be responsible for connecting to wifi or bluetooth and being available for connection with the cloud platform. The platform operator will be responsible for observing operational logs and remediating coverage issues, such as bugs in the system, service outtages, or delivering feature requests to enable future expansion of the system.
+In a typical operational profile of this system, a consumer will purchase several devices and connect them to the internet via their personal Wi-Fi. The consumer will interact with the devices remotely either through an app on their phone or a web interface. The consumer is assumed to be non-technical, and will perform operations such as locking doors, viewing camera streams, and configuring rules such as locking schedules or thermostat schedules. The device controller, installed on each physical hardware system integrated within the platform, will be designed by a third party and will be responsible for connecting to Wi-Fi or Bluetooth and being available for connection with the cloud platform. The platform operator will be responsible for observing operational logs and remediating coverage issues, such as bugs in the system, service outages, or delivering feature requests to enable future expansion of the system.
 
 
 \subsection{Workflows}
