@@ -1,6 +1,7 @@
-% ── 9. Scalability, Availability, and Fault Tolerance ────────────────────────
 \section{Scalability, Availability, and Fault Tolerance}
 
-% TODO: Explain how the architecture scales with demand, handles failures,
-% and protects data availability/durability.
-% Include redundancy strategies, stateless components, backup/recovery.
+The architecture scales primarily through managed and serverless services rather than manually provisioned application servers. Amazon API Gateway, AWS Lambda, AWS IoT Core, and Amazon DynamoDB allow LightsPlease to grow with household count, device connections, and command volume without requiring the team to manage a traditional web tier. The platform also separates user-facing requests, device telemetry, and camera traffic into different paths, which helps prevent growth in one workload from degrading the others. Because the compute layer is largely stateless, the system can scale horizontally more easily, although this also increases reliance on AWS service quotas, pricing models, and provider-specific design patterns.
+
+Availability and fault tolerance are supported through managed regional services, Multi-Availability Zone data storage, and loosely coupled processing paths. Separating the consumer control path from telemetry and media processing reduces the chance that a fault in one workflow will degrade the entire platform. Retry behavior in Lambda and Step Functions, along with AWS IoT Core's support for reconnecting devices, improves tolerance to transient failures and short network interruptions. The main remaining gap is the initial single-region deployment, which still leaves a full regional outage as a future resiliency concern.
+
+Data durability is improved by keeping persistent state in managed storage services rather than on ephemeral compute instances. Household and device state is stored in DynamoDB, archived media in Amazon S3, and time-series telemetry in Timestream, which reduces the risk of data loss when individual compute functions fail. Recovery can be further strengthened through features such as point-in-time recovery for critical tables and well-defined retention policies for higher-volume data. These choices improve recoverability, but they also require tighter lifecycle management and cost control, especially for camera footage and other storage-heavy workloads.

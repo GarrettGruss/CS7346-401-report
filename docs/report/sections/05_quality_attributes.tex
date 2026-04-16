@@ -1,13 +1,13 @@
-% ── 5. Cloud Architecture Quality Attributes ("-ilities") ────────────────────
 \section{Cloud Architecture Quality Attributes}
 
-% TODO: Identify and prioritize the most relevant quality attributes.
-% For each: explain why it matters, how the architecture addresses it,
-% and what tradeoffs are involved.
+For LightsPlease, the most important quality attributes are security, availability, scalability, performance, fault tolerance, and durability. These matter most because the platform is expected to control household devices over the internet, remain responsive for common actions such as locking doors or changing thermostat settings, and continue operating as the number of homes and connected modules grows. The proposed architecture supports these priorities through authenticated device and user access, encrypted communication, managed AWS services, and a separation between control, telemetry, and media workloads. The main tradeoff is that these choices reduce operational burden and improve resilience, but they also increase dependence on AWS-managed services and leave the initial single-region design more exposed to a full regional outage than a multi-region deployment would be.
 
-\subsection{Scalability}
-\subsection{Availability}
-\subsection{Fault Tolerance}
-\subsection{Security}
-\subsection{Performance}
-\subsection{Cost Efficiency}
+Other important attributes are cost efficiency, maintainability, extensibility, usability, and observability. These are still relevant because LightsPlease is intended for consumer households, so it must be simple to operate, and should support new device categories without requiring major architectural changes. The design addresses these through usage-based managed services, centralized monitoring, and a modular cloud control layer that can accommodate additional device types over time. However, keeping LightsPlease flexible and easy to operate requires careful cost monitoring, disciplined service boundaries, and enough abstraction to keep the user experience simple \cite{cloud_computing}.
+
+\subsection{Functional Requirements}
+
+LightsPlease must allow consumers to control registered modules remotely over the internet and receive near-real-time feedback on device state. It must also support live and recorded camera access, user-defined automation rules, configurable notifications, and a queryable event history spanning days to months. Device onboarding is expected to remain self-service and simple enough for non-technical users. In addition, the LightsPlease should support over-the-air updates for deployed devices and provide internal visibility into service health and fleet activity.
+
+\subsection{Non-Functional Requirements}
+
+The architecture must scale from an initial deployment to thousands of households and tens of thousands of connected devices without requiring major redesign. Remote control actions should remain responsive under normal operating conditions, and should continue accepting device telemetry and consumer requests during routine infrastructure failures. Security requirements include encrypted transport, authenticated remote access, and device identity controls that prevent one household from interacting with another household's modules. Cost should remain proportional to usage so LightsPlease can grow without large fixed infrastructure commitments during the early stages of adoption.

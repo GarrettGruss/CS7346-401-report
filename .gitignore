@@ -39,6 +39,7 @@ main.pdf
 
 ## Build tool auxiliary files:
 *.fdb_latexmk
+docs/report/.latexmkrc
 *.synctex
 *.synctex(busy)
 *.synctex.gz

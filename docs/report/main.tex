@@ -1,29 +1,19 @@
 \documentclass[12pt]{article}
-\usepackage[utf8]{inputenc}
-\usepackage[T1]{fontenc}
-\usepackage{helvet}
-% \renewcommand{\familydefault}{\sfdefault}
-\usepackage{setspace}
-\usepackage[margin=1in]{geometry}
-\usepackage{hyperref}
-\usepackage{xurl}
-\usepackage[style=ieee]{biblatex}
-\addbibresource{references.bib}
-
-\onehalfspacing
-
-\title{}
-\author{Garrett Gruss and Blaine Harris}
-\date{\today}
+\input{preamble}
 
 \begin{document}
 
+% ── Title Page ────────────────────────────────────────────────────────────────
+\hypersetup{pageanchor=false}
+\input{title_page}
+% \thispagestyle{empty}
+
 % ── Abstract (does not count toward page limit) ───────────────────────────────
-\newpage
+\clearpage
+% \hypersetup{pageanchor=true}
+\frontmatterpagesetup
 \begin{abstract}
-  \noindent
-  % TODO: 1–2 paragraph abstract summarizing the problem, approach, and key
-  % architectural decisions.
+This report presents LightsPlease, a cloud-native home automation architecture built on AWS for consumer households using modular devices such as lights, locks, thermostats, and cameras. The proposed solution is designed to support secure remote monitoring and control, user-defined automation, real-time device interaction, and a simple onboarding experience while scaling to thousands of homes and tens of thousands of connected devices. The architecture emphasizes managed services to balance scalability, availability, security, maintainability, and cost efficiency within the scope of the kata. This paper explains the system requirements, architectural decisions, major service selections, and the key tradeoffs, risks, and mitigation strategies that shape the overall design. 
 \end{abstract}
 
 % ── Table of contents (does not count toward page limit) ─────────────────────
@@ -38,25 +28,30 @@
 % ─────────────────────────────────────────────────────────────────────────────
 %  BODY — pages below count toward the 15–20 page limit
 % ─────────────────────────────────────────────────────────────────────────────
-\newpage
+\clearpage
+\mainmatterpagesetup
 
 \input{sections/01_introduction}
 \input{sections/02_assumptions}
-\input{sections/03_use_cases}
-\input{sections/04_architecture_diagram}
+\input{sections/03_use_cases/03_use_cases}
+\input{sections/04_architecture/04_architecture_diagram}
 \input{sections/05_quality_attributes}
 \input{sections/06_twelve_factor}
 \input{sections/07_well_architected}
 \input{sections/08_cloud_services}
 \input{sections/09_scalability_availability}
-\input{sections/10_cost}
+\input{sections/10_cost/10_cost}
 \input{sections/11_risks}
 \input{sections/12_conclusion}
+\label{LastMainPage}
 
 % ─────────────────────────────────────────────────────────────────────────────
-%  References (do not count toward page limit)
+%  Appendix and references (do not count toward page limit)
 % ─────────────────────────────────────────────────────────────────────────────
-\newpage
-\printbibliography[title={References}]
+\clearpage
+\supplementpagesetup
+\printbibliography[heading=bibintoc,title={References}]
+
+\input{appendix}
 
 \end{document}

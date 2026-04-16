@@ -1,18 +1,31 @@
 % ── 6. Cloud-Native Application Design (Twelve-Factor App) ───────────────────
 \section{Cloud-Native Application Design}
-
-% TODO: Identify the Twelve-Factor factors most relevant to this design.
-% Explain alignment; state which factors are not applicable and why.
+LightsPlease utilizes managed services, which abstracts our implementation from some of the \textit{Twelve-Factor App} ideas. However, several of the ideas that shape deployment consistency, externalized configuration, stateless execution, attached backing services, and operational separation still apply. Other factors, such as port binding and disposability still somewhat apply, but are less central due to LightsPlease being primaily built on managed AWS entry points and serverless execution rather than dedicated application hosts.
 
 \subsection{Codebase}
-\subsection{Dependencies}
-\subsection{Config}
+
+The backend services and infrastructure definitions should be maintained as a single version controlled codebase that can be promoted across development, staging, and production environments. This is applicable to our architecture, because our core workflow of device registration, automation handling, command processing, and media access must behave consistently regardless of deployment stage. 
+
+\subsection{Configuration}
+
+Environment specific values should remain outside the application logic so the same deployed code can operate in multiple environments without modification. For LightsPlease, that includes values such as API endpoints, table names, topic prefixes, feature flags, retention settings, and secret material managed through AWS-native configuration and secret-management tooling. Keeping configuration external makes the system easier to adapt over time, but it also means configuration changes need the same discipline and validation as code changes.
+
 \subsection{Backing Services}
+
+The architecture already treats storage, messaging, and workflow services as attached resources rather than as components embedded directly into the application layer. DynamoDB, Timestream, S3, IoT Core, and Kinesis Video Streams each serve a distinct role and can be updated or scaled independently of the Lambda-based business logic that uses them. That separation is a good fit for this kata because our architecture relies on control traffic, telemetry, and media workloads that would be awkward to force through a single storage or messaging model.
+
 \subsection{Build, Release, Run}
-\subsection{Processes}
-\subsection{Port Binding}
-\subsection{Concurrency}
-\subsection{Disposability}
+
+LightsPlease also aligns reasonably well with the build, release, and run separation. Cloud functions, API definitions, and infrastructure templates can be built and validated first, promoted as a release artifact, and then deployed into a runtime environment without treating deployment as an ad hoc manual step. For a consumer platform that controls household devices, that separation is important because it supports predictable rollout, rollback, and review when changes affect security, automation behavior, or command handling.
+
+\subsection{Processes and Concurrency}
+
+LightsPlease's compute layer is designed around short-lived, stateless execution rather than dedicated application servers. Lambda functions can scale horizontally to absorb bursts in API traffic, telemetry processing, and automation activity, while persistent state remains in managed services such as DynamoDB and Timestream. This is a strong fit for the expected workload because household activity is uneven and event-driven, although it does shift more coordination responsibility onto the surrounding storage and messaging layers.
+
 \subsection{Dev/Prod Parity}
-\subsection{Logs}
-\subsection{Admin Processes}
+
+Development and production should remain structurally similar so that defects are not hidden by major differences in environment shape. In this design, that means using the same service boundaries, infrastructure definitions, and deployment patterns across stages rather than building a simplified local architecture that behaves differently from production. The benefit is fewer surprises during release, though it can raise development cost if parity is taken too literally for every managed service.
+
+\subsection{Logs and Admin Processes}
+
+LightsPlease also fits the Twelve-Factor treatment of logs and admin processes. Logs should be emitted as event streams into CloudWatch rather than written as local files on compute nodes, which is especially important in a serverless architecture where instances are ephemeral and distributed. Administrative actions such as cleanup jobs, backfills, firmware rollout coordination, or reporting tasks should remain separate from the main request path so that operational work does not become tangled with user-facing traffic.

@@ -1,12 +1,28 @@
 % ── 7. Well-Architected Framework Alignment ───────────────────────────────────
 \section{Well-Architected Framework Alignment}
 
-% TODO: Discuss alignment with AWS Well-Architected Framework (or equivalent).
-% Address all six pillars; prioritize and justify tradeoffs.
-
 \subsection{Operational Excellence}
+
+The architecture supports operational excellence by favoring managed AWS services, infrastructure as code, and automated deployment workflows rather than manually managed infrastructure. Amazon CloudWatch dashboards, centralized logs, and Amazon SNS-backed alarms give the team a practical operating model for monitoring the platform, while runbooks and staged deployments reduce the blast radius of production changes. The tradeoff is that this improves consistency for a small operations team, but it also increases dependence on deployment automation and AWS-native operational tooling.
+
 \subsection{Security}
+
+Security is the highest-priority pillar because the system manages locks, cameras, and other sensitive household devices. The design supports this through Amazon Cognito-based user authentication with multi-factor authentication for remote-control access, device certificates in AWS IoT Core, TLS-protected communication, AWS WAF protection at the public edge, encryption at rest, and least-privilege AWS Identity and Access Management (IAM) roles. The tradeoff is that stronger security improves protection and tenant isolation, but it adds friction to onboarding, credential recovery, and device lifecycle management.
+
 \subsection{Reliability}
+
+The design aligns with the reliability pillar by building on managed services, decoupled workflows, and stateless compute paths that recover cleanly from transient failures. Multi-Availability Zone data services, durable object storage, retries in asynchronous processing, and workflow orchestration all help the platform continue operating when individual components fail. For the initial release, this supports a low Recovery Point Objective (RPO) and a short Recovery Time Objective (RTO) for routine service or zonal failures, but the single-region design still leaves a larger regional outage as an accepted residual risk.
+
 \subsection{Performance Efficiency}
+
+Performance efficiency matters because LightsPlease must keep remote control and monitoring responsive as device count and traffic grow. The architecture supports this by using purpose-built managed services for API handling, device messaging, storage, and video delivery, while Amazon CloudFront reduces frontend latency and the command path remains relatively direct from client to cloud to device. The tradeoff is that keeping latency-sensitive paths efficient may require features such as caching or provisioned capacity in selected areas, which improves responsiveness but can raise cost.
+
 \subsection{Cost Optimization}
+
+Cost optimization is discussed in detail in Section~\ref{sec:cost}. Our design follows the key cost optimization principles by using consumption-based pricing (Lambda on-demand, DynamoDB on-demand), avoiding idle resource costs, and matching the resource type to the workload. The primary area where the architecture accepts higher cost in exchange for capability is Kinesis Video Streams, which carries a higher storage cost than a direct-to-S3 archival model but enables the live streaming capability that is central to the product's camera use case.
+
+As LightsPlease scales, the cost optimization path involves migrating DynamoDB tables with predictable traffic to provisioned capacity with auto-scaling, evaluating S3 Intelligent-Tiering for camera archival objects, and monitoring Lambda function memory allocation against actual utilization to right-size function configurations.
+
 \subsection{Sustainability}
+
+Utilizing a serverless application layer reduces idle resource usage and improve shared infrastructure utilization. By building on AWS managed services and serverless architecture, we are able to keep our overall system modular. This allows us to utilize improvements AWS makes to these services, with the tradeoff that there could be implementation breaking updates.

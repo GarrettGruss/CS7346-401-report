@@ -1,0 +1,13 @@
+https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html
+https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/distribution-web-awswaf.html
+https://docs.aws.amazon.com/prescriptive-guidance/latest/modernization-net-applications-security/cognito.html
+https://docs.aws.amazon.com/apigateway/latest/developerguide/welcome.html
+https://docs.aws.amazon.com/lambda/latest/dg/welcome.html
+https://docs.aws.amazon.com/step-functions/latest/dg/welcome.html
+https://docs.aws.amazon.com/iot/latest/developerguide/what-is-aws-iot.html
+https://docs.aws.amazon.com/kinesisvideostreams/latest/dg/what-is-kinesis-video.html
+https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Introduction.html
+https://docs.aws.amazon.com/timestream/latest/developerguide/what-is-timestream.html
+https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html
+https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/WhatIsCloudWatch.html
+https://docs.aws.amazon.com/sns/latest/dg/welcome.html
