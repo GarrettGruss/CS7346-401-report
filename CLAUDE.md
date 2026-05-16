@@ -55,6 +55,12 @@ The kata ("LightsPlease" / home automation):
 - **Environment**: Dev Containers (ms-vscode-remote.remote-containers)
 - **Build artifacts**: LaTeX auxiliary files and build outputs are gitignored (standard LaTeX .gitignore)
 
+## Report Conventions
+
+- **Risk identifiers**: Risks in Section 11 are formally numbered as R-01, R-02, … in subsection headings for traceability
+- **Writing style enforcement**: Sections should use cohesive narrative paragraphs; "residual risk remains" trailing sentences have been trimmed in favor of inline acknowledgment of limitations
+- **Cost section cross-references**: Section 11 risks referencing cost sensitivity should cite `\ref{sec:cost}` for traceability
+
 ## Key Evaluation Criteria
 
 - Architectural reasoning and defensible tradeoffs — not a single "correct" solution

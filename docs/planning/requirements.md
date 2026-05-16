@@ -18,7 +18,8 @@
 ### Scalability
     • The platform backend shall be capable of supporting thousands of independently deployed home units within the first three years of operation, accommodating tens of thousands of concurrently connected devices.
 ### Reliability and Availability
-    • The system shall maintain local control of safety-critical devices, such as locks and alarms, in the event that internet connectivity is lost.
+    • Safety-critical devices, such as locks, shall default to a fail-secure state upon loss of internet connectivity, remaining locked until connectivity is restored or the device is operated manually. 
+    * All physical modules shall remain operable by hand independent of platform availability.
     • Cloud-side platform services shall maintain a minimum availability of 99.9%.
 ### Security
     • All communication between modules, the home hub, and cloud services shall be encrypted in transit.
